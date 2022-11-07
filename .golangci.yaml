@@ -21,6 +21,7 @@ linters:
     - revive
     - stylecheck
     - tparallel
+    - unused
     - unconvert
     - unparam
     - gocyclo

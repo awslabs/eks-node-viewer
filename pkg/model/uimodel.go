@@ -11,19 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/*
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 
 package model
 
@@ -115,6 +102,12 @@ func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.Reso
 			pct = 0
 		}
 		extra := ""
+		if n.IsOnDemand() {
+			extra = "On-Demand "
+		} else {
+			extra = "Spot      "
+		}
+
 		if n.Cordoned() {
 			extra += " cordoned"
 		}
@@ -123,9 +116,14 @@ func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.Reso
 		} else {
 			extra += time.Since(n.Created()).String()
 		}
+
+		price := ""
+		if n.Price != 0 {
+			price = fmt.Sprintf("$%0.3f", n.Price)
+		}
 		if firstLine {
-			fmt.Fprintf(b, "%s %s %s (%3d pods) %s %s\n", pad(n.Name(), nodeNameLen), pad(string(res), resNameLen), u.progress.ViewAs(pct), n.NumPods(),
-				n.InstanceType(), extra)
+			fmt.Fprintf(b, "%s %s %s (%3d pods) %s/%s %s\n", pad(n.Name(), nodeNameLen), pad(string(res), resNameLen), u.progress.ViewAs(pct), n.NumPods(),
+				n.InstanceType(), price, extra)
 		} else {
 			fmt.Fprintf(b, "%s %s %s\n", pad("", nodeNameLen), pad(string(res), resNameLen), u.progress.ViewAs(pct))
 		}
@@ -135,6 +133,7 @@ func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.Reso
 
 func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, b *strings.Builder) {
 	firstLine := true
+
 	for _, res := range resources {
 		allocatable := stats.AllocatableResources[res]
 		used := stats.UsedResources[res]
@@ -152,7 +151,8 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		}
 
 		u.progress.ShowPercentage = false
-		descr := pad(fmt.Sprintf("%s/%s %s %s", used.String(), allocatable.String(), pctUsedStr, res), 60)
+		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
+		descr := pad(fmt.Sprintf("%s/%s %s %s $%0.3f/hour $%0.3f/month", used.String(), allocatable.String(), pctUsedStr, res, stats.TotalPrice, monthlyPrice), 60)
 		if firstLine {
 			fmt.Fprintf(b, "%d nodes %s %s\n", stats.NumNodes, descr, u.progress.ViewAs(pctUsed/100.0))
 		} else {

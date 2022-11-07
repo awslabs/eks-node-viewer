@@ -1,4 +1,6 @@
 
+build:
+	go build ./cmd/monitui
 
 download:
 	go mod download

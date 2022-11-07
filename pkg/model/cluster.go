@@ -33,6 +33,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/awslabs/monitui/pkg/pricing"
 )
 
 type Cluster struct {
@@ -65,6 +67,15 @@ func (c *Cluster) DeleteNode(name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.nodes, name)
+	var podsToDelete []objectKey
+	for k, p := range c.pods {
+		if p.NodeName() == name {
+			podsToDelete = append(podsToDelete, k)
+		}
+	}
+	for _, k := range podsToDelete {
+		delete(c.pods, k)
+	}
 }
 
 func (c *Cluster) GetNode(name string) (*Node, bool) {
@@ -74,9 +85,10 @@ func (c *Cluster) GetNode(name string) (*Node, bool) {
 	return n, ok
 }
 
-func (c *Cluster) AddPod(pod *Pod) {
+func (c *Cluster) AddPod(pod *Pod, pprov *pricing.Provider) (totalPods int) {
 	c.mu.Lock()
 	c.pods[objectKey{namespace: pod.Namespace(), name: pod.Name()}] = pod
+	totalPods = len(c.pods)
 	c.mu.Unlock()
 
 	if !pod.IsScheduled() {
@@ -84,13 +96,15 @@ func (c *Cluster) AddPod(pod *Pod) {
 	}
 	n, ok := c.GetNode(pod.NodeName())
 	if !ok {
-		n = c.AddNode(NewNode(&v1.Node{ObjectMeta: metav1.ObjectMeta{Name: pod.NodeName()}}))
+		// node doesn't exist so we need to create it first
+		n = c.AddNode(NewNode(&v1.Node{ObjectMeta: metav1.ObjectMeta{Name: pod.NodeName()}}, pprov))
 		n.Hide()
 	}
 	n.BindPod(pod)
+	return
 }
 
-func (c *Cluster) DeletePod(namespace, name string) {
+func (c *Cluster) DeletePod(namespace, name string) (totalPods int) {
 	p, ok := c.GetPod(namespace, name)
 	if ok && p.IsScheduled() {
 		n, ok := c.GetNode(p.NodeName())
@@ -100,7 +114,9 @@ func (c *Cluster) DeletePod(namespace, name string) {
 	}
 	c.mu.Lock()
 	delete(c.pods, objectKey{namespace: namespace, name: name})
+	totalPods = len(c.pods)
 	c.mu.Unlock()
+	return
 }
 
 func (c *Cluster) GetPod(namespace string, name string) (*Pod, bool) {
@@ -135,6 +151,7 @@ func (c *Cluster) Stats() Stats {
 		if !n.Visible() {
 			continue
 		}
+		st.TotalPrice += n.Price
 		st.NumNodes++
 		st.Nodes = append(st.Nodes, n)
 		addResources(st.AllocatableResources, n.Allocatable())

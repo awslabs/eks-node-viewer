@@ -38,4 +38,5 @@ type Stats struct {
 	TotalPods            int
 	PodsByPhase          map[v1.PodPhase]int
 	BoundPodCount        int
+	TotalPrice           float64
 }
