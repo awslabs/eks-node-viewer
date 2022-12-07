@@ -80,7 +80,6 @@ func addLicense(path string, d fs.DirEntry, err error) error {
 	if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
 		return fmt.Errorf("seeking, %w", err)
 	}
-	fmt.Fprintln(tmp, apacheLicense)
 
 	// followed by the source file contents
 	_, err = io.Copy(tmp, srcFile)
