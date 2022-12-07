@@ -1,27 +1,34 @@
+## Usage
 
-
-## Building
-```sh
-$ make build
+### Install
+```shell
+go install github.com/awslabs/eks-node-viewer/cmd/eks-node-viewer@latest
 ```
-
-## Running
-
-We read from the shared credentials file by default (`~/.aws/credentials`).  To also read from your `~/.aws/config`, set `AWS_SDK_LOAD_CONFIG=true`.
-
 ### Standard
 ```shell
-./eks-node-viewer
+eks-node-viewer
 ```
-
 
 ### Karpenter Nodes Only
 ```shell
-./eks-node-viewer --nodeSelector "karpenter.sh/provisioner-name" 
+eks-node-viewer --nodeSelector "karpenter.sh/provisioner-name"
 ```
-
 
 ### Display CPU and Memory Usage
 ```shell
-./eks-node-viewer  --resources cpu,memory
+eks-node-viewer --resources cpu,memory
+```
+### Troubleshooting
+
+#### NoCredentialProviders: no valid providers in chain. Deprecated.
+
+This CLI relies on AWS credentials to access pricing data. You must have credentials configured via `~/aws/credentials`, `~/.aws/config`, environment variables, or some other credential provider chain.
+
+See [credential provider documentation(https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) for more.
+
+## Development
+
+### Building
+```shell
+$ make build
 ```
