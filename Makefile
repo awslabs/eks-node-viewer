@@ -1,6 +1,6 @@
 
 build:
-	go build ./cmd/monitui
+	go build ./cmd/eks-node-viewer
 
 download:
 	go mod download
