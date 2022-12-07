@@ -1,4 +1,4 @@
-module github.com/awslabs/monitui
+module github.com/awslabs/eks-node-viewer
 
 go 1.19
 
