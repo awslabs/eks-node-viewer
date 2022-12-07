@@ -44,9 +44,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/awslabs/monitui/pkg/client"
-	"github.com/awslabs/monitui/pkg/model"
-	"github.com/awslabs/monitui/pkg/pricing"
+	"github.com/awslabs/eks-node-viewer/pkg/client"
+	"github.com/awslabs/eks-node-viewer/pkg/model"
+	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
 
 func main() {

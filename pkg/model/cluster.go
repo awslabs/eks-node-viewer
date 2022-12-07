@@ -34,7 +34,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/awslabs/monitui/pkg/pricing"
+	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
 
 type Cluster struct {
