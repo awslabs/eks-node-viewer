@@ -34,7 +34,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/aws/session"
 	tea "github.com/charmbracelet/bubbletea"
 	v1 "k8s.io/api/core/v1"
@@ -61,11 +61,10 @@ func main() {
 	flag.Parse()
 	ctx, cancel := context.WithCancel(context.Background())
 
+	defaults.SharedCredentialsFilename()
 	var pprov *pricing.Provider
 	if !*disablePricing {
-		sess := session.Must(session.NewSession(&aws.Config{
-			Region: aws.String("us-west-2"),
-		}))
+		sess := session.Must(session.NewSession(nil))
 		pprov = pricing.NewProvider(ctx, sess)
 	}
 
