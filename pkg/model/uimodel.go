@@ -197,6 +197,6 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (u *UIModel) SetResources(resources []string) {
 	u.cluster.resources = nil
 	for _, r := range resources {
-		u.cluster.resources = append(u.cluster.resources, v1.ResourceName((r)))
+		u.cluster.resources = append(u.cluster.resources, v1.ResourceName(r))
 	}
 }
