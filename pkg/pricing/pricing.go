@@ -102,6 +102,15 @@ func NewPricingAPI(sess *session.Session, region string) pricingiface.PricingAPI
 	return pricing.New(sess, &aws.Config{Region: aws.String(pricingAPIRegion)})
 }
 
+func NewStaticProvider() *Provider {
+	return &Provider{
+		onDemandUpdateTime: initialPriceUpdate,
+		onDemandPrices:     initialOnDemandPrices,
+		// default our spot pricing to the same as the on-demand pricing until a price update
+		spotPrices:     populateInitialSpotPricing(initialOnDemandPrices),
+		spotUpdateTime: initialPriceUpdate,
+	}
+}
 func NewProvider(ctx context.Context, sess *session.Session) *Provider {
 	region := "us-west-2"
 	if aws.StringValue(sess.Config.Region) != "" {

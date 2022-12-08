@@ -3,7 +3,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,12 +48,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	defaults.SharedCredentialsFilename()
-	var pprov *pricing.Provider
+	pprov := pricing.NewStaticProvider()
 	if !*disablePricing {
 		sess := session.Must(session.NewSession(nil))
 		pprov = pricing.NewProvider(ctx, sess)
 	}
-
 	m := model.NewUIModel()
 
 	m.SetResources(strings.FieldsFunc(*resources, func(r rune) bool { return r == ',' }))
