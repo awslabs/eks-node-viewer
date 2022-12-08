@@ -40,11 +40,11 @@ func main() {
 	resources := flag.String("resources", "cpu", "List of comma separated resources to monitor")
 	disablePricing := flag.Bool("disable-pricing", false, "Disable pricing lookups")
 
+	flag.Parse()
 	cs, err := client.Create()
 	if err != nil {
 		log.Fatalf("creating client, %s", err)
 	}
-	flag.Parse()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	defaults.SharedCredentialsFilename()
