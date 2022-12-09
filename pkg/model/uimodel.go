@@ -108,6 +108,10 @@ func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.Reso
 			extra = "Spot      "
 		}
 
+
+		//Add zone
+		extra += " " + n.node.Labels["topology.kubernetes.io/zone"]
+
 		if n.Cordoned() {
 			extra += " cordoned"
 		}
@@ -117,10 +121,17 @@ func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.Reso
 			extra += time.Since(n.Created()).String()
 		}
 
+
+		//Add provisioner Name
+		extra += " " + n.node.Labels["karpenter.sh/provisioner-name"]
+
 		price := ""
 		if n.Price != 0 {
 			price = fmt.Sprintf("$%0.3f", n.Price)
+		} else {
+			price = fmt.Sprintf("      ")
 		}
+
 		if firstLine {
 			fmt.Fprintf(b, "%s %s %s (%3d pods) %s/%s %s\n", pad(n.Name(), nodeNameLen), pad(string(res), resNameLen), u.progress.ViewAs(pct), n.NumPods(),
 				n.InstanceType(), price, extra)
