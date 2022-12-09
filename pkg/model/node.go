@@ -19,8 +19,6 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-
-	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
 
 type objectKey struct {
@@ -36,20 +34,11 @@ type Node struct {
 	Price   float64
 }
 
-func NewNode(n *v1.Node, pprov *pricing.Provider) *Node {
+func NewNode(n *v1.Node) *Node {
 	node := &Node{
 		node: *n,
 		pods: map[objectKey]*Pod{},
 		used: v1.ResourceList{},
-	}
-	if node.IsOnDemand() {
-		if price, ok := pprov.OnDemandPrice(node.InstanceType()); ok {
-			node.Price = price
-		}
-	} else {
-		if price, ok := pprov.SpotPrice(node.InstanceType(), node.Zone()); ok {
-			node.Price = price
-		}
 	}
 
 	return node

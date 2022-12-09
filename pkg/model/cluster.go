@@ -83,8 +83,9 @@ func (c *Cluster) AddPod(pod *Pod, pprov *pricing.Provider) (totalPods int) {
 	}
 	n, ok := c.GetNode(pod.NodeName())
 	if !ok {
-		// node doesn't exist so we need to create it first
-		n = c.AddNode(NewNode(&v1.Node{ObjectMeta: metav1.ObjectMeta{Name: pod.NodeName()}}, pprov))
+		// node doesn't exist so we need to create it first to have somewhere to record the pod, it will be updated
+		// when we are notified about the node by the API Server
+		n = c.AddNode(NewNode(&v1.Node{ObjectMeta: metav1.ObjectMeta{Name: pod.NodeName()}}))
 		n.Hide()
 	}
 	n.BindPod(pod)
