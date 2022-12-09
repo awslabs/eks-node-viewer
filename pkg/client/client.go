@@ -29,6 +29,7 @@ package client
 
 import (
 	"flag"
+	"os"
 	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
@@ -40,14 +41,20 @@ import (
 var kubeconfig *string
 
 func init() {
+	kubeEnv, kubeEnvExists := os.LookupEnv("KUBECONFIG")
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		if kubeEnvExists {
+			kubeconfig = flag.String("kubeconfig", kubeEnv, "absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		}
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 }
 
 func Create() (*kubernetes.Clientset, error) {
+
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
