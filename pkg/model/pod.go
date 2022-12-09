@@ -21,51 +21,63 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+// Pod is our pod model used for internal storage and display
 type Pod struct {
 	mu  sync.RWMutex
 	pod v1.Pod
 }
 
+// NewPod constructs a pod model based off of the K8s pod object
 func NewPod(n *v1.Pod) *Pod {
 	return &Pod{
 		pod: *n,
 	}
 }
+
+// Update updates the pod model, replacing it with a shallow copy of the provided pod
 func (p *Pod) Update(pod *v1.Pod) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.pod = *pod
 }
 
+// IsScheduled returns true if the pod has been scheduled to a node
 func (p *Pod) IsScheduled() bool {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.pod.Spec.NodeName != ""
 }
 
+// NodeName returns the node that the pod is scheduled against, or an empty string
 func (p *Pod) NodeName() string {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.pod.Spec.NodeName
 }
 
+// Namespace returns the namespace of the pod
 func (p *Pod) Namespace() string {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.pod.Namespace
 }
 
-func (p *Pod) Phase() v1.PodPhase {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	return p.pod.Status.Phase
-}
+// Name returns the name of the pod
 func (p *Pod) Name() string {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.pod.Name
 }
 
+// Phase returns the pod phase
+func (p *Pod) Phase() v1.PodPhase {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.pod.Status.Phase
+}
+
+// Requested returns the sum of the resources requested by the pod. This doesn't include any init containers as we
+// are interested in the steady state usage of the pod
 func (p *Pod) Requested() v1.ResourceList {
 	p.mu.RLock()
 	defer p.mu.RUnlock()

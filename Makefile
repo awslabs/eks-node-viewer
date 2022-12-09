@@ -17,4 +17,9 @@ verify: boilerplate licenses download
 	gofmt -w -s ./.
 	golangci-lint run
 
-.PHONY: verify boilerplate licenses download
+
+coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+
+.PHONY: verify boilerplate licenses download coverage
