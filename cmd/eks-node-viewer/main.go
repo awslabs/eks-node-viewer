@@ -3,7 +3,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -116,7 +116,18 @@ func startMonitor(ctx context.Context, clientset *kubernetes.Clientset, m *model
 		time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				n := cluster.AddNode(model.NewNode(obj.(*v1.Node), pprov))
+				node := model.NewNode(obj.(*v1.Node))
+				// lookup our node price
+				if node.IsOnDemand() {
+					if price, ok := pprov.OnDemandPrice(node.InstanceType()); ok {
+						node.Price = price
+					}
+				} else {
+					if price, ok := pprov.SpotPrice(node.InstanceType(), node.Zone()); ok {
+						node.Price = price
+					}
+				}
+				n := cluster.AddNode(node)
 				n.Show()
 			},
 			DeleteFunc: func(obj interface{}) {
