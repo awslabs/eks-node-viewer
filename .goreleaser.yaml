@@ -1,0 +1,50 @@
+project_name: eks-node-viewer
+
+source:
+  enabled: false
+
+before:
+  hooks:
+  - go mod download
+
+builds:
+  - binary: eks-node-viewer
+    main: ./cmd/eks-node-viewer
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    targets:
+      - linux_amd64
+      - windows_amd64
+      - darwin_amd64
+      - darwin_arm64
+    env:
+      - CGO_ENABLED=0
+
+    flags:
+      - -v
+
+universal_binaries:
+ - replace: true
+
+archives:
+  -
+    format_overrides:
+      - goos: windows
+        format: zip
+
+release:
+  prerelease: auto
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_sha256_checksums.txt"
+  algorithm: sha256
+
+changelog:
+  skip: false
+  use: git # github(-native)
+  sort: asc
