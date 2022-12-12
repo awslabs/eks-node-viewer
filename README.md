@@ -10,7 +10,7 @@
 ### Talks Using eks-node-viewer
 
 - [Containers from the Couch: Workload Consolidation with Karpenter](https://www.youtube.com/watch?v=BnksdJ3oOEs)
-- [AWS re:Invent 2022 - Kubernetes virtually anywhere, for everyon](https://www.youtube.com/watch?v=OB7IZolZk78)
+- [AWS re:Invent 2022 - Kubernetes virtually anywhere, for everyone](https://www.youtube.com/watch?v=OB7IZolZk78)
 
 ### Installation
 ```shell
