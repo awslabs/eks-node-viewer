@@ -18,6 +18,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth" // pull auth
@@ -26,6 +27,7 @@ import (
 )
 
 var kubeconfig *string
+var context *string
 
 func init() {
 	kubeEnv, kubeEnvExists := os.LookupEnv("KUBECONFIG")
@@ -38,12 +40,16 @@ func init() {
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+	context = flag.String("context", "", "name of the kubernetes context to use")
 }
 
 func Create() (*kubernetes.Clientset, error) {
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{Precedence: strings.Split(*kubeconfig, ":")},
+		&clientcmd.ConfigOverrides{CurrentContext: *context}).ClientConfig()
+
 	if err != nil {
 		return nil, err
 	}
