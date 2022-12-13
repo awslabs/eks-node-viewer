@@ -52,6 +52,10 @@ This CLI relies on AWS credentials to access pricing data if you don't use the `
 
 See [credential provider documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) for more.
 
+#### I get an error of `creating client, exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1"`
+
+Updating your AWS cli to the latest version and [updating your kubeconfig](https://docs.aws.amazon.com/cli/latest/reference/eks/update-kubeconfig.html) should resolve this issue.   
+
 ## Development
 
 ### Building
