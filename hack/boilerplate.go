@@ -63,7 +63,7 @@ func addLicense(path string, d fs.DirEntry, err error) error {
 	if err != nil {
 		return fmt.Errorf("reading  %s, %w", srcFile.Name(), err)
 	}
-	if bytes.Index(buf, []byte(apacheLicense)) != -1 {
+	if bytes.Index(buf, []byte(`http://www.apache.org/licenses/LICENSE-2.0`)) != -1 {
 		return nil
 	}
 	log.Println("adding license to", path)

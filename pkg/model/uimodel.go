@@ -16,6 +16,7 @@ package model
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -23,20 +24,24 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	v1 "k8s.io/api/core/v1"
+
+	"github.com/awslabs/eks-node-viewer/pkg/text"
 )
 
 var helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
 
 type UIModel struct {
-	progress progress.Model
-	cluster  *Cluster
+	progress    progress.Model
+	cluster     *Cluster
+	extraLabels []string
 }
 
-func NewUIModel() *UIModel {
+func NewUIModel(extraLabels []string) *UIModel {
 	return &UIModel{
 		// red to green
-		progress: progress.New(progress.WithGradient("#ff0000", "#04B575")),
-		cluster:  NewCluster(),
+		progress:    progress.New(progress.WithGradient("#ff0000", "#04B575")),
+		cluster:     NewCluster(),
+		extraLabels: extraLabels,
 	}
 }
 
@@ -60,31 +65,25 @@ func (u *UIModel) View() string {
 		return "Waiting for update or no nodes found..."
 	}
 
-	u.writeClusterSummary(u.cluster.resources, stats, &b)
-
+	ctw := text.NewColorTabWriter(&b, 0, 8, 1)
+	u.writeClusterSummary(u.cluster.resources, stats, ctw)
+	ctw.Flush()
 	u.progress.ShowPercentage = true
+
 	fmt.Fprintf(&b, "%d pods (%d pending %d running %d bound)\n", stats.TotalPods,
 		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
 
 	fmt.Fprintln(&b)
-	nodeNameLen := 0
 	for _, n := range stats.Nodes {
-		if len(n.Name()) > nodeNameLen {
-			nodeNameLen = len(n.Name())
-		}
+		u.writeNodeInfo(n, ctw, u.cluster.resources)
 	}
-
-	for _, n := range stats.Nodes {
-		u.writeNodeInfo(n, &b, u.cluster.resources, nodeNameLen)
-	}
-
-	fmt.Fprintln(&b)
+	ctw.Flush()
 
 	fmt.Fprintln(&b, helpStyle("Press any key to quit"))
 	return b.String()
 }
 
-func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.ResourceName, nodeNameLen int) {
+func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName) {
 	allocatable := n.Allocatable()
 	used := n.Used()
 	firstLine := true
@@ -101,37 +100,47 @@ func (u *UIModel) writeNodeInfo(n *Node, b *strings.Builder, resources []v1.Reso
 		if allocatableRes.AsApproximateFloat64() == 0 {
 			pct = 0
 		}
-		extra := ""
-		if n.IsOnDemand() {
-			extra = "On-Demand "
-		} else {
-			extra = "Spot      "
-		}
 
-		if n.Cordoned() {
-			extra += " cordoned"
-		}
-		if n.Ready() {
-			extra += " ready"
-		} else {
-			extra += time.Since(n.Created()).String()
-		}
-
-		price := ""
-		if n.Price != 0 {
-			price = fmt.Sprintf("$%0.3f", n.Price)
-		}
 		if firstLine {
-			fmt.Fprintf(b, "%s %s %s (%3d pods) %s/%s %s\n", pad(n.Name(), nodeNameLen), pad(string(res), resNameLen), u.progress.ViewAs(pct), n.NumPods(),
-				n.InstanceType(), price, extra)
+			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s/$%0.3f", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), n.Price)
+			if n.IsOnDemand() {
+				fmt.Fprintf(w, "\tOn-Demand")
+			} else {
+				fmt.Fprintf(w, "\tSpot")
+			}
+
+			if n.Cordoned() && n.Deleting() {
+				fmt.Fprintf(w, "\tCordoned/Deleting")
+			} else if n.Deleting() {
+				fmt.Fprintf(w, "\tDeleting")
+			} else if n.Cordoned() {
+				fmt.Fprintf(w, "\tCordoned")
+			} else {
+				fmt.Fprintf(w, "\t")
+			}
+
+			if n.Ready() {
+				fmt.Fprintf(w, "\tReady")
+			} else {
+				fmt.Fprintf(w, "\t%s", time.Since(n.Created()).String())
+			}
+
+			for _, label := range u.extraLabels {
+				fmt.Fprintf(w, "\t%s", n.node.Labels[label])
+			}
+
 		} else {
-			fmt.Fprintf(b, "%s %s %s\n", pad("", nodeNameLen), pad(string(res), resNameLen), u.progress.ViewAs(pct))
+			fmt.Fprintf(w, " \t%s\t%s\t\t\t\t\t", res, u.progress.ViewAs(pct))
+			for range u.extraLabels {
+				fmt.Fprintf(w, "\t")
+			}
 		}
+		fmt.Fprintln(w)
 		firstLine = false
 	}
 }
 
-func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, b *strings.Builder) {
+func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, w io.Writer) {
 	firstLine := true
 
 	for _, res := range resources {
@@ -152,27 +161,16 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 
 		u.progress.ShowPercentage = false
 		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
-		descr := pad(fmt.Sprintf("%s/%s %s %s $%0.3f/hour $%0.3f/month", used.String(), allocatable.String(), pctUsedStr, res, stats.TotalPrice, monthlyPrice), 60)
+		clusterPrice := fmt.Sprintf("%0.3f/hour $%0.3f/month", stats.TotalPrice, monthlyPrice)
 		if firstLine {
-			fmt.Fprintf(b, "%d nodes %s %s\n", stats.NumNodes, descr, u.progress.ViewAs(pctUsed/100.0))
+			fmt.Fprintf(w, "%d nodes\t%s/%s\t%s\t%s\t%s\t%s\n",
+				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
 		} else {
-			fmt.Fprintf(b, "%s%s %s\n", pad("", len(fmt.Sprintf("%d nodes ", stats.NumNodes))),
-				descr, u.progress.ViewAs(pctUsed/100.0))
+			fmt.Fprintf(w, " \t%s/%s\t%s\t%s\t%s\t\n",
+				used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0))
 		}
 		firstLine = false
 	}
-}
-
-func pad(s string, minLen int) any {
-	if len(s) >= minLen {
-		return s
-	}
-	var sb strings.Builder
-	sb.WriteString(s)
-	for sb.Len() < minLen {
-		sb.WriteByte(' ')
-	}
-	return sb.String()
 }
 
 type tickMsg time.Time
