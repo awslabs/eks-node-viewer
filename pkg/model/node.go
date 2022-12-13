@@ -167,3 +167,9 @@ func (n *Node) Show() {
 	defer n.mu.Unlock()
 	n.visible = true
 }
+
+func (n *Node) Deleting() bool {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return !n.node.DeletionTimestamp.IsZero()
+}

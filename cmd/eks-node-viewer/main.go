@@ -37,6 +37,7 @@ import (
 
 func main() {
 	nodeSelectorFlag := flag.String("nodeSelector", "", "Node label selector used to filter nodes, if empty all nodes are selected ")
+	extraLabels := flag.String("extra-labels", "", "A comma separated set of extra node labels to display")
 	resources := flag.String("resources", "cpu", "List of comma separated resources to monitor")
 	disablePricing := flag.Bool("disable-pricing", false, "Disable pricing lookups")
 
@@ -53,7 +54,7 @@ func main() {
 		sess := session.Must(session.NewSession(nil))
 		pprov = pricing.NewProvider(ctx, sess)
 	}
-	m := model.NewUIModel()
+	m := model.NewUIModel(strings.Split(*extraLabels, ","))
 
 	m.SetResources(strings.FieldsFunc(*resources, func(r rune) bool { return r == ',' }))
 
@@ -64,25 +65,38 @@ func main() {
 		nodeSelector = ns
 	}
 
-	startMonitor(ctx, cs, m, nodeSelector, pprov)
+	monitorSettings := &monitorSettings{
+		clientset:    cs,
+		model:        m,
+		nodeSelector: nodeSelector,
+		pricing:      pprov,
+	}
+	startMonitor(ctx, monitorSettings)
 	if err := tea.NewProgram(m, tea.WithAltScreen()).Start(); err != nil {
 		log.Fatalf("error running tea: %s", err)
 	}
 	cancel()
 }
 
-func startMonitor(ctx context.Context, clientset *kubernetes.Clientset, m *model.UIModel, nodeSelector labels.Selector, pprov *pricing.Provider) {
-	podWatchList := cache.NewListWatchFromClient(clientset.CoreV1().RESTClient(), "pods",
+type monitorSettings struct {
+	clientset    *kubernetes.Clientset
+	model        *model.UIModel
+	nodeSelector labels.Selector
+	pricing      *pricing.Provider
+}
+
+func startMonitor(ctx context.Context, settings *monitorSettings) {
+	podWatchList := cache.NewListWatchFromClient(settings.clientset.CoreV1().RESTClient(), "pods",
 		v1.NamespaceAll, fields.Everything())
 
-	cluster := m.Cluster()
+	cluster := settings.model.Cluster()
 	_, podController := cache.NewInformer(
 		podWatchList,
 		&v1.Pod{},
 		time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				cluster.AddPod(model.NewPod(obj.(*v1.Pod)), pprov)
+				cluster.AddPod(model.NewPod(obj.(*v1.Pod)), settings.pricing)
 			},
 			DeleteFunc: func(obj interface{}) {
 				p := obj.(*v1.Pod)
@@ -95,10 +109,10 @@ func startMonitor(ctx context.Context, clientset *kubernetes.Clientset, m *model
 				} else {
 					pod, ok := cluster.GetPod(p.Namespace, p.Name)
 					if !ok {
-						cluster.AddPod(model.NewPod(p), pprov)
+						cluster.AddPod(model.NewPod(p), settings.pricing)
 					} else {
 						pod.Update(p)
-						cluster.AddPod(pod, pprov)
+						cluster.AddPod(pod, settings.pricing)
 					}
 				}
 			},
@@ -106,9 +120,9 @@ func startMonitor(ctx context.Context, clientset *kubernetes.Clientset, m *model
 	)
 	go podController.Run(ctx.Done())
 
-	nodeWatchList := cache.NewFilteredListWatchFromClient(clientset.CoreV1().RESTClient(), "nodes",
+	nodeWatchList := cache.NewFilteredListWatchFromClient(settings.clientset.CoreV1().RESTClient(), "nodes",
 		v1.NamespaceAll, func(options *metav1.ListOptions) {
-			options.LabelSelector = nodeSelector.String()
+			options.LabelSelector = settings.nodeSelector.String()
 		})
 	_, controller := cache.NewInformer(
 		nodeWatchList,
@@ -119,11 +133,11 @@ func startMonitor(ctx context.Context, clientset *kubernetes.Clientset, m *model
 				node := model.NewNode(obj.(*v1.Node))
 				// lookup our node price
 				if node.IsOnDemand() {
-					if price, ok := pprov.OnDemandPrice(node.InstanceType()); ok {
+					if price, ok := settings.pricing.OnDemandPrice(node.InstanceType()); ok {
 						node.Price = price
 					}
 				} else {
-					if price, ok := pprov.SpotPrice(node.InstanceType(), node.Zone()); ok {
+					if price, ok := settings.pricing.SpotPrice(node.InstanceType(), node.Zone()); ok {
 						node.Price = price
 					}
 				}
