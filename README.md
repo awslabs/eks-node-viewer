@@ -13,28 +13,42 @@
 - [AWS re:Invent 2022 - Kubernetes virtually anywhere, for everyone](https://www.youtube.com/watch?v=OB7IZolZk78)
 
 ### Installation
+
 ```shell
 go install github.com/awslabs/eks-node-viewer/cmd/eks-node-viewer@latest
 ```
-### Standard Usage
+
+Note: This will install it to your `GOBIN` directory, typically `~/go/bin` if it is unconfigured.
+
+## Usage
 ```shell
+Usage of ./eks-node-viewer:
+  -disable-pricing
+    	Disable pricing lookups
+  -kubeconfig string
+    	(optional) absolute path to the kubeconfig file (default "~/.kube/config")
+  -nodeSelector string
+    	Node label selector used to filter nodes, if empty all nodes are selected
+  -resources string
+    	List of comma separated resources to monitor (default "cpu")
+```
+
+### Examples
+```shell
+# Standard usage
 eks-node-viewer
-```
-
-### Karpenter Nodes Only
-```shell
+# Karenter nodes only
 eks-node-viewer --nodeSelector "karpenter.sh/provisioner-name"
-```
-
-### Display CPU and Memory Usage
-```shell
+# Display both CPU and Memory Usage 
 eks-node-viewer --resources cpu,memory
+# Specify a particular AWS profile and region 
+AWS_PROFILE=myprofile AWS_REGION=us-west-2 
 ```
 ### Troubleshooting
 
 #### NoCredentialProviders: no valid providers in chain. Deprecated.
 
-This CLI relies on AWS credentials to access pricing data. You must have credentials configured via `~/aws/credentials`, `~/.aws/config`, environment variables, or some other credential provider chain.
+This CLI relies on AWS credentials to access pricing data if you don't use the `--disable-pricing` option. You must have credentials configured via `~/aws/credentials`, `~/.aws/config`, environment variables, or some other credential provider chain.
 
 See [credential provider documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) for more.
 
