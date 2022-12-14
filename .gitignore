@@ -1,4 +1,3 @@
 .idea
-cmd/eks-node-viewer/eks-node-viewer
-eks-node-viewer
+/eks-node-viewer
 coverage.out
