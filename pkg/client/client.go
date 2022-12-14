@@ -15,40 +15,19 @@ limitations under the License.
 package client
 
 import (
-	"flag"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth" // pull auth
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 )
 
-var kubeconfig *string
-var context *string
-
-func init() {
-	kubeEnv, kubeEnvExists := os.LookupEnv("KUBECONFIG")
-	if home := homedir.HomeDir(); home != "" {
-		if kubeEnvExists {
-			kubeconfig = flag.String("kubeconfig", kubeEnv, "absolute path to the kubeconfig file")
-		} else {
-			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-		}
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	context = flag.String("context", "", "name of the kubernetes context to use")
-}
-
-func Create() (*kubernetes.Clientset, error) {
+func Create(kubeconfig, context string) (*kubernetes.Clientset, error) {
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{Precedence: strings.Split(*kubeconfig, ":")},
-		&clientcmd.ConfigOverrides{CurrentContext: *context}).ClientConfig()
+		&clientcmd.ClientConfigLoadingRules{Precedence: strings.Split(kubeconfig, ":")},
+		&clientcmd.ConfigOverrides{CurrentContext: context}).ClientConfig()
 
 	if err != nil {
 		return nil, err

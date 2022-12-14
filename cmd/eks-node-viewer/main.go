@@ -3,7 +3,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"strings"
 	"time"
@@ -36,13 +35,12 @@ import (
 )
 
 func main() {
-	nodeSelectorFlag := flag.String("nodeSelector", "", "Node label selector used to filter nodes, if empty all nodes are selected ")
-	extraLabels := flag.String("extra-labels", "", "A comma separated set of extra node labels to display")
-	resources := flag.String("resources", "cpu", "List of comma separated resources to monitor")
-	disablePricing := flag.Bool("disable-pricing", false, "Disable pricing lookups")
+	flags, err := ParseFlags()
+	if err != nil {
+		log.Fatalf("cannot parse flags: %v", err)
+	}
 
-	flag.Parse()
-	cs, err := client.Create()
+	cs, err := client.Create(flags.Kubeconfig, flags.Context)
 	if err != nil {
 		log.Fatalf("creating client, %s", err)
 	}
@@ -50,16 +48,16 @@ func main() {
 
 	defaults.SharedCredentialsFilename()
 	pprov := pricing.NewStaticProvider()
-	if !*disablePricing {
+	if !flags.DisablePricing {
 		sess := session.Must(session.NewSession(nil))
 		pprov = pricing.NewProvider(ctx, sess)
 	}
-	m := model.NewUIModel(strings.Split(*extraLabels, ","))
+	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","))
 
-	m.SetResources(strings.FieldsFunc(*resources, func(r rune) bool { return r == ',' }))
+	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
 	var nodeSelector labels.Selector
-	if ns, err := labels.Parse(*nodeSelectorFlag); err != nil {
+	if ns, err := labels.Parse(flags.NodeSelector); err != nil {
 		log.Fatalf("parsing node selector: %s", err)
 	} else {
 		nodeSelector = ns
