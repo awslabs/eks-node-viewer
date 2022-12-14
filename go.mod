@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.131
 	github.com/charmbracelet/bubbles v0.13.0
 	github.com/charmbracelet/bubbletea v0.22.1
-	github.com/charmbracelet/lipgloss v0.5.0
+	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/samber/lo v1.33.0
 	go.uber.org/multierr v1.8.0
 	k8s.io/api v0.25.0
