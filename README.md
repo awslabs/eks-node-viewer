@@ -30,7 +30,7 @@ Usage of ./eks-node-viewer:
   -extra-labels string
     	A comma separated set of extra node labels to display
   -kubeconfig string
-    	Absolute path to the kubeconfig file (default "/Users/tnealt/.kube/config")
+    	Absolute path to the kubeconfig file (default "~/.kube/config")
   -node-selector string
     	Node label selector used to filter nodes, if empty all nodes are selected
   -resources string
