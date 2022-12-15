@@ -122,10 +122,14 @@ func loadConfigFile() (configFile, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lineKV := strings.Split(scanner.Text(), "=")
-		if len(lineKV) > 1 {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		lineKV := strings.SplitN(line, "=", 2)
+		if len(lineKV) == 2 {
 			key := strings.TrimSpace(lineKV[0])
-			value := strings.TrimSpace(strings.Join(lineKV[1:], "="))
+			value := strings.TrimSpace(lineKV[1])
 			fileContent[key] = value
 		}
 	}
