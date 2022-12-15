@@ -18,11 +18,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"k8s.io/client-go/util/homedir"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"k8s.io/client-go/util/homedir"
 )
 
 var (
@@ -32,7 +33,7 @@ var (
 
 func init() {
 	homeDir = homedir.HomeDir()
-	configPath = filepath.Join(homeDir, ".eks_node_viewer")
+	configPath = filepath.Join(homeDir, ".eks-node-viewer")
 }
 
 type Flags struct {
@@ -56,8 +57,8 @@ func ParseFlags() (Flags, error) {
 	contextDefault := cfg.getValue("context", "")
 	flagSet.StringVar(&flags.Context, "context", contextDefault, "Name of the kubernetes context to use")
 
-	nodeSelectorDefault := cfg.getValue("nodeSelector", "")
-	flagSet.StringVar(&flags.NodeSelector, "nodeSelector", nodeSelectorDefault, "Node label selector used to filter nodes, if empty all nodes are selected ")
+	nodeSelectorDefault := cfg.getValue("node-selector", "")
+	flagSet.StringVar(&flags.NodeSelector, "node-selector", nodeSelectorDefault, "Node label selector used to filter nodes, if empty all nodes are selected ")
 
 	extraLabelsDefault := cfg.getValue("extra-labels", "")
 	flagSet.StringVar(&flags.ExtraLabels, "extra-labels", extraLabelsDefault, "A comma separated set of extra node labels to display")

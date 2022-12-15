@@ -23,11 +23,15 @@ Note: This will install it to your `GOBIN` directory, typically `~/go/bin` if it
 ## Usage
 ```shell
 Usage of ./eks-node-viewer:
+  -context string
+    	Name of the kubernetes context to use
   -disable-pricing
     	Disable pricing lookups
+  -extra-labels string
+    	A comma separated set of extra node labels to display
   -kubeconfig string
-    	(optional) absolute path to the kubeconfig file (default "~/.kube/config")
-  -nodeSelector string
+    	Absolute path to the kubeconfig file (default "/Users/tnealt/.kube/config")
+  -node-selector string
     	Node label selector used to filter nodes, if empty all nodes are selected
   -resources string
     	List of comma separated resources to monitor (default "cpu")
@@ -38,12 +42,26 @@ Usage of ./eks-node-viewer:
 # Standard usage
 eks-node-viewer
 # Karenter nodes only
-eks-node-viewer --nodeSelector "karpenter.sh/provisioner-name"
+eks-node-viewer --node-selector "karpenter.sh/provisioner-name"
 # Display both CPU and Memory Usage 
 eks-node-viewer --resources cpu,memory
 # Specify a particular AWS profile and region 
 AWS_PROFILE=myprofile AWS_REGION=us-west-2 
 ```
+
+
+### Default Options
+You can supply default options to `eks-node-viewer` by creating a file named `.eks-node-viewer` in your home directory and specifying
+options there. The format is `option-name=value` where the option names are the command line flags:
+```text
+# select only Karpenter managed nodes
+node-selector=karpenter.sh/provisioner-name
+
+# display both CPU and memory
+resources=cpu,memory
+```
+
+
 ### Troubleshooting
 
 #### NoCredentialProviders: no valid providers in chain. Deprecated.

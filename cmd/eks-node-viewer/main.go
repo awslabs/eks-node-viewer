@@ -15,7 +15,10 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -37,6 +40,9 @@ import (
 func main() {
 	flags, err := ParseFlags()
 	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			os.Exit(0)
+		}
 		log.Fatalf("cannot parse flags: %v", err)
 	}
 
