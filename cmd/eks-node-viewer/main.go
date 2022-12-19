@@ -108,7 +108,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				p := newObj.(*v1.Pod)
-				if !p.DeletionTimestamp.IsZero() {
+				if isTerminalPod(p) {
 					cluster.DeletePod(p.Namespace, p.Name)
 				} else {
 					pod, ok := cluster.GetPod(p.Namespace, p.Name)
@@ -169,4 +169,16 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 	)
 	go controller.Run(ctx.Done())
 
+}
+
+// isTerminalPod returns true if the pod is deleting or in a terminal state
+func isTerminalPod(p *v1.Pod) bool {
+	if p.DeletionTimestamp.IsZero() {
+		return true
+	}
+	switch p.Status.Phase {
+	case v1.PodSucceeded, v1.PodFailed:
+		return true
+	}
+	return false
 }
