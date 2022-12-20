@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.23.1
 	github.com/charmbracelet/lipgloss v0.6.0
-	github.com/samber/lo v1.33.0
+	github.com/samber/lo v1.37.0
 	go.uber.org/multierr v1.8.0
 	k8s.io/api v0.25.0
 	k8s.io/apimachinery v0.25.0
