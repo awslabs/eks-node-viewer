@@ -76,6 +76,16 @@ func (p *Pod) Phase() v1.PodPhase {
 	return p.pod.Status.Phase
 }
 
+// IsCompleted returns true if the pod is not running anymore (failed or completed)
+func (p *Pod) IsCompleted() bool {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	if p.Phase() == v1.PodSucceeded || p.Phase() == v1.PodFailed {
+		return true
+	}
+	return false
+}
+
 // Requested returns the sum of the resources requested by the pod. This doesn't include any init containers as we
 // are interested in the steady state usage of the pod
 func (p *Pod) Requested() v1.ResourceList {

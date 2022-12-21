@@ -78,11 +78,7 @@ func (c *Cluster) AddPod(pod *Pod, pprov *pricing.Provider) (totalPods int) {
 	totalPods = len(c.pods)
 	c.mu.Unlock()
 
-	if !pod.IsScheduled() {
-		return
-	}
-
-	if pod.Phase() == v1.PodSucceeded || pod.Phase() == v1.PodFailed {
+	if !pod.IsScheduled() || pod.IsCompleted() {
 		return
 	}
 
