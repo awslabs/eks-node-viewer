@@ -114,7 +114,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 				}
 				pod, ok := cluster.GetPod(p.Namespace, p.Name)
 				if pod.IsCompleted() {
-					cluster.DeletePod(p.Namespace, p.Name)
+					cluster.DeletePod(pod.Namespace, pod.Name)
 					return
 				}
 				if !ok {
