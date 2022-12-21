@@ -39,7 +39,7 @@ type UIModel struct {
 func NewUIModel(extraLabels []string) *UIModel {
 	return &UIModel{
 		// red to green
-		progress:    progress.New(progress.WithGradient("#ff0000", "#04B575")),
+		progress:    progress.New(progress.WithGradient("#04B575", "#ff0000")),
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
 	}
@@ -152,11 +152,11 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		}
 		pctUsedStr := fmt.Sprintf("%0.1f%%", pctUsed)
 		if pctUsed > 90 {
-			pctUsedStr = green(pctUsedStr)
+			pctUsedStr = red(pctUsedStr)
 		} else if pctUsed > 60 {
 			pctUsedStr = yellow(pctUsedStr)
 		} else {
-			pctUsedStr = red(pctUsedStr)
+			pctUsedStr = green(pctUsedStr)
 		}
 
 		u.progress.ShowPercentage = false
