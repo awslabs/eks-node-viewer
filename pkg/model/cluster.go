@@ -81,6 +81,11 @@ func (c *Cluster) AddPod(pod *Pod, pprov *pricing.Provider) (totalPods int) {
 	if !pod.IsScheduled() {
 		return
 	}
+
+	if pod.Phase() == v1.PodSucceeded || pod.Phase() == v1.PodFailed {
+		return
+	}
+
 	n, ok := c.GetNode(pod.NodeName())
 	if !ok {
 		// node doesn't exist so we need to create it first to have somewhere to record the pod, it will be updated

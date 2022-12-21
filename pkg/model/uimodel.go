@@ -70,8 +70,8 @@ func (u *UIModel) View() string {
 	ctw.Flush()
 	u.progress.ShowPercentage = true
 
-	fmt.Fprintf(&b, "%d pods (%d pending %d running %d bound)\n", stats.TotalPods,
-		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
+	fmt.Fprintf(&b, "%d pods (%d pending, %d running, %d bound, %d completed, %d failed)\n", stats.TotalPods,
+		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount, stats.PodsByPhase[v1.PodSucceeded], stats.PodsByPhase[v1.PodFailed])
 
 	fmt.Fprintln(&b)
 	for _, n := range stats.Nodes {
