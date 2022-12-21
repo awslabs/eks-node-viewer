@@ -108,7 +108,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				p := newObj.(*v1.Pod)
-				if !p.DeletionTimestamp.IsZero() {
+				if !p.DeletionTimestamp.IsZero() || p.Status.Phase == v1.PodSucceeded || p.Status.Phase == v1.PodFailed {
 					cluster.DeletePod(p.Namespace, p.Name)
 					return
 				}
@@ -117,12 +117,6 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 					cluster.AddPod(model.NewPod(p), settings.pricing)
 					return
 				}
-
-				if pod.IsCompleted() {
-					cluster.DeletePod(pod.Namespace(), pod.Name())
-					return
-				}
-
 				pod.Update(p)
 				cluster.AddPod(pod, settings.pricing)
 			},
