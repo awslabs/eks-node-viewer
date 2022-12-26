@@ -47,6 +47,12 @@ func (n *Node) IsOnDemand() bool {
 	return n.node.Labels["karpenter.sh/capacity-type"] == "on-demand" ||
 		n.node.Labels["eks.amazonaws.com/capacityType"] == "ON_DEMAND"
 }
+
+func (n *Node) IsSpot() bool {
+	return n.node.Labels["karpenter.sh/capacity-type"] == "spot" ||
+		n.node.Labels["eks.amazonaws.com/capacityType"] == "SPOT"
+}
+
 func (n *Node) Update(node *v1.Node) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
