@@ -18,6 +18,7 @@ import (
 	"errors"
 	"flag"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -140,10 +141,12 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 					if price, ok := settings.pricing.OnDemandPrice(node.InstanceType()); ok {
 						node.Price = price
 					}
-				} else {
+				} else if node.IsSpot() {
 					if price, ok := settings.pricing.SpotPrice(node.InstanceType(), node.Zone()); ok {
 						node.Price = price
 					}
+				} else {
+					node.Price = math.NaN()
 				}
 				n := cluster.AddNode(node)
 				n.Show()
