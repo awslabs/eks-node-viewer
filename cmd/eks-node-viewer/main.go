@@ -101,7 +101,10 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 		time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				cluster.AddPod(model.NewPod(obj.(*v1.Pod)), settings.pricing)
+				p := obj.(*v1.Pod)
+				if !isTerminalPod(p) {
+					cluster.AddPod(model.NewPod(p), settings.pricing)
+				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				p := obj.(*v1.Pod)
@@ -176,7 +179,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 
 // isTerminalPod returns true if the pod is deleting or in a terminal state
 func isTerminalPod(p *v1.Pod) bool {
-	if p.DeletionTimestamp.IsZero() {
+	if !p.DeletionTimestamp.IsZero() {
 		return true
 	}
 	switch p.Status.Phase {
