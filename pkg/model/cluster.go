@@ -139,7 +139,11 @@ func (c *Cluster) Stats() Stats {
 		if !n.Visible() {
 			continue
 		}
-		st.TotalPrice += n.Price
+		// only add the price if it's not NaN which is used to indicate an unknown
+		// price
+		if n.Price == n.Price {
+			st.TotalPrice += n.Price
+		}
 		st.NumNodes++
 		st.Nodes = append(st.Nodes, n)
 		addResources(st.AllocatableResources, n.Allocatable())
