@@ -57,6 +57,15 @@ func main() {
 		fmt.Println(attribution)
 		os.Exit(0)
 	}
+
+	if flags.Version {
+		fmt.Printf("eks-node-viewer version %s\n", version)
+		fmt.Printf("commit: %s\n", commit)
+		fmt.Printf("built at: %s\n", date)
+		fmt.Printf("built by: %s\n", builtBy)
+		os.Exit(0)
+	}
+
 	cs, err := client.Create(flags.Kubeconfig, flags.Context)
 	if err != nil {
 		log.Fatalf("creating client, %s", err)
