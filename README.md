@@ -1,5 +1,6 @@
 [![GitHub License](https://img.shields.io/badge/License-Apache%202.0-ff69b4.svg)](https://github.com/awslabs/eks-node-viewer/blob/main/LICENSE)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/awslabs/eks-node-viewer/issues)
+[![Go code tests](https://github.com/awslabs/eks-node-viewer/actions/workflows/test.yaml/badge.svg)](https://github.com/awslabs/eks-node-viewer/actions/workflows/test.yaml)
 
 ## Usage
 
@@ -14,6 +15,7 @@
 
 ### Installation
 
+Please either fetch th latest [release](https://github.com/awslabs/eks-node-viewer/releases) or install manually using:
 ```shell
 go install github.com/awslabs/eks-node-viewer/cmd/eks-node-viewer@latest
 ```
@@ -37,6 +39,9 @@ Usage of ./eks-node-viewer:
     	Node label selector used to filter nodes, if empty all nodes are selected
   -resources string
     	List of comma separated resources to monitor (default "cpu")
+  -v	Display eks-node-viewer version
+  -version
+    	Display eks-node-viewer version
 ```
 
 ### Examples
@@ -53,7 +58,6 @@ eks-node-viewer --extra-labels topology.kubernetes.io/zone
 AWS_PROFILE=myprofile AWS_REGION=us-west-2
 ```
 
-
 ### Default Options
 You can supply default options to `eks-node-viewer` by creating a file named `.eks-node-viewer` in your home directory and specifying
 options there. The format is `option-name=value` where the option names are the command line flags:
@@ -64,7 +68,6 @@ node-selector=karpenter.sh/provisioner-name
 # display both CPU and memory
 resources=cpu,memory
 ```
-
 
 ### Troubleshooting
 
@@ -81,6 +84,12 @@ Updating your AWS cli to the latest version and [updating your kubeconfig](https
 ## Development
 
 ### Building
+
 ```shell
 $ make build
+```
+
+Or local execution of GoReleaser build:
+```shell
+$ make goreleaser
 ```

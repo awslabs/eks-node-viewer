@@ -29,6 +29,10 @@ import (
 var (
 	homeDir    string
 	configPath string
+	version    = "dev"
+	commit     = ""
+	date       = ""
+	builtBy    = ""
 )
 
 func init() {
@@ -44,6 +48,7 @@ type Flags struct {
 	Resources       string
 	DisablePricing  bool
 	ShowAttribution bool
+	Version         bool
 }
 
 func ParseFlags() (Flags, error) {
@@ -54,6 +59,9 @@ func ParseFlags() (Flags, error) {
 	if err != nil {
 		return Flags{}, fmt.Errorf("load config file: %w", err)
 	}
+
+	flagSet.BoolVar(&flags.Version, "v", false, "Display eks-node-viewer version")
+	flagSet.BoolVar(&flags.Version, "version", false, "Display eks-node-viewer version")
 
 	contextDefault := cfg.getValue("context", "")
 	flagSet.StringVar(&flags.Context, "context", contextDefault, "Name of the kubernetes context to use")
