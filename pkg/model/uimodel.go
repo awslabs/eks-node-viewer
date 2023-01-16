@@ -106,13 +106,13 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			if n.Price != n.Price {
 				priceLabel = ""
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
+			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s\t|%s|", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel, n.Zone())
 			if n.IsOnDemand() {
 				fmt.Fprintf(w, "\tOn-Demand")
 			} else if n.IsSpot() {
 				fmt.Fprintf(w, "\tSpot")
 			} else {
-				fmt.Fprintf(w, "\t")
+				fmt.Fprintf(w, "\t-")
 			}
 
 			if n.Cordoned() && n.Deleting() {
@@ -122,7 +122,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			} else if n.Cordoned() {
 				fmt.Fprintf(w, "\tCordoned")
 			} else {
-				fmt.Fprintf(w, "\t")
+				fmt.Fprintf(w, "\t-")
 			}
 
 			if n.Ready() {
