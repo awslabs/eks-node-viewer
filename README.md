@@ -3,7 +3,7 @@
 
 ## Usage
 
-`eks-node-viewer` is a tool for visualizing dynamic node usage within a cluster.  It was originally developed as an internal tool at AWS for demonstrating consolidation with [Karpenter](https://karpenter.sh/).  It displays the scheduled pod resource requests vs the allocatable capacity on the node.  It *does not* look at the actual pod resource usage.  
+`eks-node-viewer` is a tool for visualizing dynamic node usage within a cluster.  It was originally developed as an internal tool at AWS for demonstrating consolidation with [Karpenter](https://karpenter.sh/).  It displays the scheduled pod resource requests vs the allocatable capacity on the node.  It *does not* look at the actual pod resource usage.
 
 ![](./.static/screenshot.png)
 
@@ -43,10 +43,12 @@ Usage of ./eks-node-viewer:
 eks-node-viewer
 # Karenter nodes only
 eks-node-viewer --node-selector "karpenter.sh/provisioner-name"
-# Display both CPU and Memory Usage 
+# Display both CPU and Memory Usage
 eks-node-viewer --resources cpu,memory
-# Specify a particular AWS profile and region 
-AWS_PROFILE=myprofile AWS_REGION=us-west-2 
+# Display extra labels, i.e. AZ
+eks-node-viewer --extra-labels topology.kubernetes.io/zone
+# Specify a particular AWS profile and region
+AWS_PROFILE=myprofile AWS_REGION=us-west-2
 ```
 
 
@@ -72,7 +74,7 @@ See [credential provider documentation](https://docs.aws.amazon.com/sdk-for-go/a
 
 #### I get an error of `creating client, exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1"`
 
-Updating your AWS cli to the latest version and [updating your kubeconfig](https://docs.aws.amazon.com/cli/latest/reference/eks/update-kubeconfig.html) should resolve this issue.   
+Updating your AWS cli to the latest version and [updating your kubeconfig](https://docs.aws.amazon.com/cli/latest/reference/eks/update-kubeconfig.html) should resolve this issue.
 
 ## Development
 
