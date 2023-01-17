@@ -106,7 +106,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			if n.Price != n.Price {
 				priceLabel = ""
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s\t|%s|", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel, n.Zone())
+			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
 			if n.IsOnDemand() {
 				fmt.Fprintf(w, "\tOn-Demand")
 			} else if n.IsSpot() {
