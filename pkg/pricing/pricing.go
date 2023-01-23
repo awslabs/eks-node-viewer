@@ -3,7 +3,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -90,9 +90,8 @@ func NewStaticProvider() *Provider {
 	return &Provider{
 		onDemandUpdateTime: initialPriceUpdate,
 		onDemandPrices:     initialOnDemandPrices,
-		// default our spot pricing to the same as the on-demand pricing until a price update
-		spotPrices:     populateInitialSpotPricing(initialOnDemandPrices),
-		spotUpdateTime: initialPriceUpdate,
+		spotPrices:         map[string]zonalPricing{},
+		spotUpdateTime:     initialPriceUpdate,
 	}
 }
 func NewProvider(ctx context.Context, sess *session.Session) *Provider {
@@ -104,11 +103,10 @@ func NewProvider(ctx context.Context, sess *session.Session) *Provider {
 		region:             region,
 		onDemandUpdateTime: initialPriceUpdate,
 		onDemandPrices:     initialOnDemandPrices,
-		// default our spot pricing to the same as the on-demand pricing until a price update
-		spotPrices:     populateInitialSpotPricing(initialOnDemandPrices),
-		spotUpdateTime: initialPriceUpdate,
-		ec2:            ec2.New(sess),
-		pricing:        NewPricingAPI(sess, region),
+		spotPrices:         map[string]zonalPricing{},
+		spotUpdateTime:     initialPriceUpdate,
+		ec2:                ec2.New(sess),
+		pricing:            NewPricingAPI(sess, region),
 	}
 
 	go func() {
@@ -406,12 +404,4 @@ func (p *Provider) LivenessProbe(req *http.Request) error {
 	//nolint: staticcheck
 	p.mu.Unlock()
 	return nil
-}
-
-func populateInitialSpotPricing(pricing map[string]float64) map[string]zonalPricing {
-	m := map[string]zonalPricing{}
-	for it, price := range pricing {
-		m[it] = newZonalPricing(price)
-	}
-	return m
 }

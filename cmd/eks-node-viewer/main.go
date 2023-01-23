@@ -140,6 +140,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 			AddFunc: func(obj interface{}) {
 				node := model.NewNode(obj.(*v1.Node))
 				// lookup our node price
+				node.Price = math.NaN()
 				if node.IsOnDemand() {
 					if price, ok := settings.pricing.OnDemandPrice(node.InstanceType()); ok {
 						node.Price = price
@@ -148,8 +149,6 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 					if price, ok := settings.pricing.SpotPrice(node.InstanceType(), node.Zone()); ok {
 						node.Price = price
 					}
-				} else {
-					node.Price = math.NaN()
 				}
 				n := cluster.AddNode(node)
 				n.Show()
