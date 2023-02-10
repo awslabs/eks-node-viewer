@@ -108,7 +108,9 @@ func (c *Cluster) DeletePod(namespace, name string) (totalPods int) {
 }
 
 func (c *Cluster) GetPod(namespace string, name string) (*Pod, bool) {
+	c.mu.Lock()
 	pod, ok := c.pods[objectKey{namespace: namespace, name: name}]
+	c.mu.Unlock()
 	return pod, ok
 }
 
