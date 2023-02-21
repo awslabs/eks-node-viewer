@@ -23,6 +23,8 @@ Note: This will install it to your `GOBIN` directory, typically `~/go/bin` if it
 ## Usage
 ```shell
 Usage of ./eks-node-viewer:
+  -attribution
+    	Show the Open Source Attribution
   -context string
     	Name of the kubernetes context to use
   -disable-pricing
