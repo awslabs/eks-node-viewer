@@ -1,0 +1,18 @@
+# Open Source Software Attribution
+
+
+The Amazon eks-node-viewer Product includes the following third-party software/licensing:
+
+
+{{ range . }}
+## {{ .Name }}
+
+* Name: {{ .Name }}
+* Version: {{ .Version }}
+* License: [{{ .LicenseName }}]({{ .LicenseURL }})
+
+```
+{{ .LicenseText }}
+```
+{{ end }}
+

@@ -1,5 +1,4 @@
-
-build:
+build: generate
 	go build ./cmd/eks-node-viewer
 
 download:
@@ -22,4 +21,11 @@ coverage:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
-.PHONY: verify boilerplate licenses download coverage
+
+generate:
+	# run generate twice, gen_licenses needs the ATTRIBUTION file or it fails.  The second run
+	# ensures that the latest copy is embedded when we build.
+	go generate ./...
+	./hack/gen_licenses.sh
+	go generate ./...
+.PHONY: verify boilerplate licenses download coverage generate

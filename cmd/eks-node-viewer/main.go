@@ -15,8 +15,10 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"math"
 	"os"
@@ -38,6 +40,10 @@ import (
 	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
 
+//go:generate cp -r ../../ATTRIBUTION.md ./
+//go:embed ATTRIBUTION.md
+var attribution string
+
 func main() {
 	flags, err := ParseFlags()
 	if err != nil {
@@ -47,6 +53,10 @@ func main() {
 		log.Fatalf("cannot parse flags: %v", err)
 	}
 
+	if flags.ShowAttribution {
+		fmt.Println(attribution)
+		os.Exit(0)
+	}
 	cs, err := client.Create(flags.Kubeconfig, flags.Context)
 	if err != nil {
 		log.Fatalf("creating client, %s", err)
