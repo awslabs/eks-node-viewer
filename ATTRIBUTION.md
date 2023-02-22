@@ -1284,8 +1284,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.44.194
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.194/LICENSE.txt)
+* Version: v1.44.206
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.206/LICENSE.txt)
 
 ```
 
@@ -1496,8 +1496,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.44.194
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.194/internal/sync/singleflight/LICENSE)
+* Version: v1.44.206
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.206/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
