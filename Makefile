@@ -40,6 +40,6 @@ generate:
 	./hack/gen_licenses.sh
 	go generate ./...
 
-clean: ## Clean artefacts
+clean: ## Clean artifacts
 	rm -rf eks-node-viewer
 	rm -rf dist/
