@@ -15,7 +15,7 @@
 
 ### Installation
 
-Please either fetch th latest [release](https://github.com/awslabs/eks-node-viewer/releases) or install manually using:
+Please either fetch the latest [release](https://github.com/awslabs/eks-node-viewer/releases) or install manually using:
 ```shell
 go install github.com/awslabs/eks-node-viewer/cmd/eks-node-viewer@latest
 ```
