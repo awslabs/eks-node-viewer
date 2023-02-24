@@ -167,9 +167,9 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 
 		u.progress.ShowPercentage = false
 		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
-		clusterPrice := fmt.Sprintf("%0.3f/hour $%0.3f/month", stats.TotalPrice, monthlyPrice)
+		clusterPrice := fmt.Sprintf("$%0.3f/hour | $%0.3f/month", stats.TotalPrice, monthlyPrice)
 		if firstLine {
-			fmt.Fprintf(w, "%d nodes\t%s/%s\t%s\t%s\t%s\t%s\n",
+			fmt.Fprintf(w, "%d nodes\t(%s/%s)\t%s\t%s\t%s\t%s\n",
 				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
 		} else {
 			fmt.Fprintf(w, " \t%s/%s\t%s\t%s\t%s\t\n",
