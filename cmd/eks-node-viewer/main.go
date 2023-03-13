@@ -123,6 +123,11 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 				p := obj.(*v1.Pod)
 				if !isTerminalPod(p) {
 					cluster.AddPod(model.NewPod(p), settings.pricing)
+					node, ok := cluster.GetNode(p.Spec.NodeName)
+					// need to potentially update node price as we need the fargate pod in order to figure out the cost
+					if ok && node.IsFargate() && node.Price != node.Price {
+						updatePrice(settings, node)
+					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
@@ -158,17 +163,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				node := model.NewNode(obj.(*v1.Node))
-				// lookup our node price
-				node.Price = math.NaN()
-				if node.IsOnDemand() {
-					if price, ok := settings.pricing.OnDemandPrice(node.InstanceType()); ok {
-						node.Price = price
-					}
-				} else if node.IsSpot() {
-					if price, ok := settings.pricing.SpotPrice(node.InstanceType(), node.Zone()); ok {
-						node.Price = price
-					}
-				}
+				updatePrice(settings, node)
 				n := cluster.AddNode(node)
 				n.Show()
 			},
@@ -193,6 +188,27 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 	)
 	go controller.Run(ctx.Done())
 
+}
+
+func updatePrice(settings *monitorSettings, node *model.Node) {
+	// lookup our node price
+	node.Price = math.NaN()
+	if node.IsOnDemand() {
+		if price, ok := settings.pricing.OnDemandPrice(node.InstanceType()); ok {
+			node.Price = price
+		}
+	} else if node.IsSpot() {
+		if price, ok := settings.pricing.SpotPrice(node.InstanceType(), node.Zone()); ok {
+			node.Price = price
+		}
+	} else if node.IsFargate() && len(node.Pods()) == 1 {
+		cpu, mem, ok := node.Pods()[0].FargateCapacityProvisioned()
+		if ok {
+			if price, ok := settings.pricing.FargatePrice(cpu, mem); ok {
+				node.Price = price
+			}
+		}
+	}
 }
 
 // isTerminalPod returns true if the pod is deleting or in a terminal state

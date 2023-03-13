@@ -15,6 +15,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -43,6 +44,7 @@ func NewNode(n *v1.Node) *Node {
 
 	return node
 }
+
 func (n *Node) IsOnDemand() bool {
 	return n.node.Labels["karpenter.sh/capacity-type"] == "on-demand" ||
 		n.node.Labels["eks.amazonaws.com/capacityType"] == "ON_DEMAND"
@@ -51,6 +53,10 @@ func (n *Node) IsOnDemand() bool {
 func (n *Node) IsSpot() bool {
 	return n.node.Labels["karpenter.sh/capacity-type"] == "spot" ||
 		n.node.Labels["eks.amazonaws.com/capacityType"] == "SPOT"
+}
+
+func (n *Node) IsFargate() bool {
+	return n.node.Labels["eks.amazonaws.com/compute-type"] == "fargate"
 }
 
 func (n *Node) Update(node *v1.Node) {
@@ -142,6 +148,15 @@ func (n *Node) Created() time.Time {
 func (n *Node) InstanceType() string {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
+	if n.IsFargate() {
+		if len(n.Pods()) == 1 {
+			cpu, mem, ok := n.Pods()[0].FargateCapacityProvisioned()
+			if ok {
+				return fmt.Sprintf("%gvCPU-%gGB", cpu, mem)
+			}
+		}
+		return "Fargate"
+	}
 	return n.node.Labels[v1.LabelInstanceTypeStable]
 }
 
@@ -178,4 +193,12 @@ func (n *Node) Deleting() bool {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	return !n.node.DeletionTimestamp.IsZero()
+}
+
+func (n *Node) Pods() []*Pod {
+	var pods []*Pod
+	for _, p := range n.pods {
+		pods = append(pods, p)
+	}
+	return pods
 }

@@ -90,3 +90,21 @@ func TestPodUpdate(t *testing.T) {
 		t.Errorf("expeted NodeName == %s, got %s", exp, got)
 	}
 }
+
+func TestFargateCapacity(t *testing.T) {
+	tp := testPod("default", "mypod")
+	tp.Annotations = map[string]string{
+		"CapacityProvisioned": "0.25vCPU 0.5GB",
+	}
+	p := model.NewPod(tp)
+	cpu, mem, ok := p.FargateCapacityProvisioned()
+	if !ok {
+		t.Errorf("expected to have a fargate capacity")
+	}
+	if cpu != 0.25 {
+		t.Errorf("expected to have a cpu capacity of 0.25, got %f", cpu)
+	}
+	if mem != 0.5 {
+		t.Errorf("expected to have a mem capacity of 0.5, got %f", mem)
+	}
+}

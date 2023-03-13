@@ -69,6 +69,9 @@ func TestNodeTypeOnDemand(t *testing.T) {
 		if node.IsSpot() {
 			t.Errorf("exepcted to not be spot")
 		}
+		if node.IsFargate() {
+			t.Errorf("exepcted to not be fargate")
+		}
 	}
 }
 
@@ -87,6 +90,30 @@ func TestNodeTypeSpot(t *testing.T) {
 		}
 		if !node.IsSpot() {
 			t.Errorf("exepcted to be spot")
+		}
+		if node.IsFargate() {
+			t.Errorf("exepcted to not be fargate")
+		}
+	}
+}
+
+func TestNodeTypeFargate(t *testing.T) {
+	for label, value := range map[string]string{
+		"eks.amazonaws.com/compute-type": "fargate",
+	} {
+		n := testNode("mynode")
+		n.Labels = map[string]string{
+			label: value,
+		}
+		node := model.NewNode(n)
+		if node.IsOnDemand() {
+			t.Errorf("exepcted to not be on-demand")
+		}
+		if node.IsSpot() {
+			t.Errorf("exepcted to not be spot")
+		}
+		if !node.IsFargate() {
+			t.Errorf("exepcted to be fargate")
 		}
 	}
 }
