@@ -11,6 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package pricing
 
 import (
@@ -46,11 +47,13 @@ type Provider struct {
 	pricing pricingiface.PricingAPI
 	region  string
 
-	mu                 sync.RWMutex
-	onDemandUpdateTime time.Time
-	onDemandPrices     map[string]float64
-	spotUpdateTime     time.Time
-	spotPrices         map[string]zonalPricing
+	mu                      sync.RWMutex
+	onDemandUpdateTime      time.Time
+	onDemandPrices          map[string]float64
+	spotUpdateTime          time.Time
+	spotPrices              map[string]zonalPricing
+	fargateVCPUPricePerHour float64
+	fargateGBPricePerHour   float64
 }
 
 // zonalPricing is used to capture the per-zone price
@@ -158,6 +161,15 @@ func (p *Provider) OnDemandPrice(instanceType string) (float64, bool) {
 	return price, true
 }
 
+func (p *Provider) FargatePrice(cpu, memory float64) (float64, bool) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	if p.fargateGBPricePerHour == 0 || p.fargateVCPUPricePerHour == 0 {
+		return 0, false
+	}
+	return cpu*p.fargateVCPUPricePerHour + memory*p.fargateGBPricePerHour, true
+}
+
 // SpotPrice returns the last known spot price for a given instance type and zone, returning an error
 // if there is no known spot pricing for that instance type or zone
 func (p *Provider) SpotPrice(instanceType string, zone string) (float64, bool) {
@@ -190,6 +202,14 @@ func (p *Provider) updatePricing(ctx context.Context) {
 		defer wg.Done()
 		if err := p.updateSpotPricing(ctx); err != nil {
 			log.Printf("updating spot pricing, %s, using existing pricing data from %s", err, p.spotUpdateTime.Format(time.RFC3339))
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := p.updateFargatePricing(ctx); err != nil {
+			log.Printf("updating fargate pricing, %s", err)
 		}
 	}()
 
@@ -404,4 +424,80 @@ func (p *Provider) LivenessProbe(req *http.Request) error {
 	//nolint: staticcheck
 	p.mu.Unlock()
 	return nil
+}
+
+func (p *Provider) updateFargatePricing(ctx context.Context) error {
+	filters := append([]*pricing.Filter{
+		{
+			Field: aws.String("regionCode"),
+			Type:  aws.String("TERM_MATCH"),
+			Value: aws.String(p.region),
+		},
+	})
+	if err := p.pricing.GetProductsPagesWithContext(ctx, &pricing.GetProductsInput{
+		Filters:     filters,
+		ServiceCode: aws.String("AmazonEKS")}, p.fargatePage); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Provider) fargatePage(output *pricing.GetProductsOutput, _ bool) bool {
+	// this isn't the full pricing struct, just the portions we care about
+	type priceItem struct {
+		Product struct {
+			ProductFamily string
+			Attributes    struct {
+				UsageType  string
+				MemoryType string
+			}
+		}
+		Terms struct {
+			OnDemand map[string]struct {
+				PriceDimensions map[string]struct {
+					PricePerUnit struct {
+						USD string
+					}
+				}
+			}
+		}
+	}
+
+	for _, outer := range output.PriceList {
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		if err := enc.Encode(outer); err != nil {
+			log.Printf("encoding %s", err)
+		}
+		dec := json.NewDecoder(&buf)
+		var pItem priceItem
+		if err := dec.Decode(&pItem); err != nil {
+			log.Printf("decoding %s", err)
+		}
+		if !strings.Contains(pItem.Product.Attributes.UsageType, "Fargate") {
+			continue
+		}
+		name := pItem.Product.Attributes.UsageType
+		for _, term := range pItem.Terms.OnDemand {
+			for _, v := range term.PriceDimensions {
+				price, err := strconv.ParseFloat(v.PricePerUnit.USD, 64)
+				if err != nil || price == 0 {
+					continue
+				}
+				if strings.Contains(name, "vCPU-Hours") {
+					p.mu.Lock()
+					p.fargateVCPUPricePerHour = price
+					p.mu.Unlock()
+				} else if strings.Contains(name, "GB-Hours") {
+					p.mu.Lock()
+					p.fargateGBPricePerHour = price
+					p.mu.Unlock()
+				} else {
+					log.Println("unsupported fargate price information found", name)
+				}
+			}
+		}
+	}
+	return true
+
 }

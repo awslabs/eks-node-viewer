@@ -15,6 +15,9 @@ limitations under the License.
 package model
 
 import (
+	"log"
+	"regexp"
+	"strconv"
 	"sync"
 
 	v1 "k8s.io/api/core/v1"
@@ -91,4 +94,29 @@ func (p *Pod) Requested() v1.ResourceList {
 	}
 	requested[v1.ResourcePods] = resource.MustParse("1")
 	return requested
+}
+
+var fargateCapacityRe = regexp.MustCompile("(.*?)vCPU (.*?)GB")
+
+func (p *Pod) FargateCapacityProvisioned() (float64, float64, bool) {
+	provisioned, ok := p.pod.Annotations["CapacityProvisioned"]
+	if !ok {
+		return 0, 0, false
+	}
+
+	match := fargateCapacityRe.FindStringSubmatch(provisioned)
+	if len(match) != 3 {
+		log.Printf("unable to parse %q for fargate provisioner capacity", provisioned)
+	}
+	cpu, err := strconv.ParseFloat(match[1], 64)
+	if err != nil {
+		log.Printf("unable to parse CPU from fargate capacity, %q, %s", provisioned, err)
+		return 0, 0, false
+	}
+	mem, err := strconv.ParseFloat(match[2], 64)
+	if err != nil {
+		log.Printf("unable to parse memory from fargate capacity, %q, %s", provisioned, err)
+		return 0, 0, false
+	}
+	return cpu, mem, true
 }

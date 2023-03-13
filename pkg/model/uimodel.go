@@ -111,6 +111,8 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 				fmt.Fprintf(w, "\tOn-Demand")
 			} else if n.IsSpot() {
 				fmt.Fprintf(w, "\tSpot")
+			} else if n.IsFargate() {
+				fmt.Fprintf(w, "\tFargate")
 			} else {
 				fmt.Fprintf(w, "\t-")
 			}
