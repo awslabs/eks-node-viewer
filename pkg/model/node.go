@@ -202,3 +202,8 @@ func (n *Node) Pods() []*Pod {
 	}
 	return pods
 }
+
+func (n *Node) HasPrice() bool {
+	// we use NaN for an unknown price, so if this is true the price is known
+	return n.Price == n.Price
+}
