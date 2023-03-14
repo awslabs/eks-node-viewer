@@ -125,7 +125,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 					cluster.AddPod(model.NewPod(p), settings.pricing)
 					node, ok := cluster.GetNode(p.Spec.NodeName)
 					// need to potentially update node price as we need the fargate pod in order to figure out the cost
-					if ok && node.IsFargate() && node.Price != node.Price {
+					if ok && node.IsFargate() && !node.HasPrice() {
 						updatePrice(settings, node)
 					}
 				}

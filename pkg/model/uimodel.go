@@ -103,7 +103,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 
 		if firstLine {
 			priceLabel := fmt.Sprintf("/$%0.4f", n.Price)
-			if n.Price != n.Price {
+			if !n.HasPrice() {
 				priceLabel = ""
 			}
 			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
