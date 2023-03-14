@@ -1284,8 +1284,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.44.206
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.206/LICENSE.txt)
+* Version: v1.44.220
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.220/LICENSE.txt)
 
 ```
 
@@ -1496,8 +1496,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.44.206
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.206/internal/sync/singleflight/LICENSE)
+* Version: v1.44.220
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.220/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -1715,11 +1715,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-## github.com/aymanbagabas/go-osc52
+## github.com/aymanbagabas/go-osc52/v2
 
-* Name: github.com/aymanbagabas/go-osc52
-* Version: v1.2.1
-* License: [MIT](https://github.com/aymanbagabas/go-osc52/blob/v1.2.1/LICENSE)
+* Name: github.com/aymanbagabas/go-osc52/v2
+* Version: v2.0.1
+* License: [MIT](https://github.com/aymanbagabas/go-osc52/blob/v2.0.1/LICENSE)
 
 ```
 MIT License
@@ -1842,8 +1842,8 @@ SOFTWARE.
 ## github.com/charmbracelet/lipgloss
 
 * Name: github.com/charmbracelet/lipgloss
-* Version: v0.6.0
-* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.6.0/LICENSE)
+* Version: v0.7.1
+* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.7.1/LICENSE)
 
 ```
 MIT License
@@ -4294,8 +4294,8 @@ SOFTWARE.
 ## github.com/muesli/termenv
 
 * Name: github.com/muesli/termenv
-* Version: v0.14.0
-* License: [MIT](https://github.com/muesli/termenv/blob/v0.14.0/LICENSE)
+* Version: v0.15.1
+* License: [MIT](https://github.com/muesli/termenv/blob/v0.15.1/LICENSE)
 
 ```
 MIT License
@@ -4709,8 +4709,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys/unix
 
 * Name: golang.org/x/sys/unix
-* Version: v0.5.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.5.0:LICENSE)
+* Version: v0.6.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.6.0:LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
