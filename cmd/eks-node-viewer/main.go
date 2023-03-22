@@ -20,7 +20,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"strings"
 	"time"
@@ -74,13 +73,18 @@ func main() {
 
 	defaults.SharedCredentialsFilename()
 	pprov := pricing.NewStaticProvider()
+	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","))
+	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
+
 	if !flags.DisablePricing {
 		sess := session.Must(session.NewSession(nil))
-		pprov = pricing.NewProvider(ctx, sess)
+		updateAllPrices := func() {
+			m.Cluster().ForEachNode(func(n *model.Node) {
+				n.UpdatePrice(pprov)
+			})
+		}
+		pprov = pricing.NewProvider(ctx, sess, updateAllPrices)
 	}
-	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","))
-
-	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
 	var nodeSelector labels.Selector
 	if ns, err := labels.Parse(flags.NodeSelector); err != nil {
@@ -126,7 +130,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 					node, ok := cluster.GetNode(p.Spec.NodeName)
 					// need to potentially update node price as we need the fargate pod in order to figure out the cost
 					if ok && node.IsFargate() && !node.HasPrice() {
-						updatePrice(settings, node)
+						node.UpdatePrice(settings.pricing)
 					}
 				}
 			},
@@ -163,7 +167,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				node := model.NewNode(obj.(*v1.Node))
-				updatePrice(settings, node)
+				node.UpdatePrice(settings.pricing)
 				n := cluster.AddNode(node)
 				n.Show()
 			},
@@ -188,27 +192,6 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 	)
 	go controller.Run(ctx.Done())
 
-}
-
-func updatePrice(settings *monitorSettings, node *model.Node) {
-	// lookup our node price
-	node.Price = math.NaN()
-	if node.IsOnDemand() {
-		if price, ok := settings.pricing.OnDemandPrice(node.InstanceType()); ok {
-			node.Price = price
-		}
-	} else if node.IsSpot() {
-		if price, ok := settings.pricing.SpotPrice(node.InstanceType(), node.Zone()); ok {
-			node.Price = price
-		}
-	} else if node.IsFargate() && len(node.Pods()) == 1 {
-		cpu, mem, ok := node.Pods()[0].FargateCapacityProvisioned()
-		if ok {
-			if price, ok := settings.pricing.FargatePrice(cpu, mem); ok {
-				node.Price = price
-			}
-		}
-	}
 }
 
 // isTerminalPod returns true if the pod is deleting or in a terminal state

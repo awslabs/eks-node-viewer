@@ -54,6 +54,7 @@ type Provider struct {
 	spotPrices              map[string]zonalPricing
 	fargateVCPUPricePerHour float64
 	fargateGBPricePerHour   float64
+	notify                  func()
 }
 
 // zonalPricing is used to capture the per-zone price
@@ -97,7 +98,7 @@ func NewStaticProvider() *Provider {
 		spotUpdateTime:     initialPriceUpdate,
 	}
 }
-func NewProvider(ctx context.Context, sess *session.Session) *Provider {
+func NewProvider(ctx context.Context, sess *session.Session, notify func()) *Provider {
 	region := "us-west-2"
 	if aws.StringValue(sess.Config.Region) != "" {
 		region = aws.StringValue(sess.Config.Region)
@@ -110,6 +111,7 @@ func NewProvider(ctx context.Context, sess *session.Session) *Provider {
 		spotUpdateTime:     initialPriceUpdate,
 		ec2:                ec2.New(sess),
 		pricing:            NewPricingAPI(sess, region),
+		notify:             notify,
 	}
 
 	go func() {
@@ -212,8 +214,8 @@ func (p *Provider) updatePricing(ctx context.Context) {
 			log.Printf("updating fargate pricing, %s", err)
 		}
 	}()
-
 	wg.Wait()
+	p.notify()
 }
 
 func (p *Provider) updateOnDemandPricing(ctx context.Context) error {

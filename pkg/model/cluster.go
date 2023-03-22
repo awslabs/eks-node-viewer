@@ -65,6 +65,14 @@ func (c *Cluster) DeleteNode(name string) {
 	}
 }
 
+func (c *Cluster) ForEachNode(f func(n *Node)) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	for _, n := range c.nodes {
+		f(n)
+	}
+}
+
 func (c *Cluster) GetNode(name string) (*Node, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -143,7 +151,7 @@ func (c *Cluster) Stats() Stats {
 		}
 		// only add the price if it's not NaN which is used to indicate an unknown
 		// price
-		if n.Price == n.Price {
+		if n.HasPrice() {
 			st.TotalPrice += n.Price
 		}
 		st.NumNodes++
