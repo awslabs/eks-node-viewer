@@ -16,10 +16,13 @@ package model
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+
+	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
 
 type objectKey struct {
@@ -206,4 +209,25 @@ func (n *Node) Pods() []*Pod {
 func (n *Node) HasPrice() bool {
 	// we use NaN for an unknown price, so if this is true the price is known
 	return n.Price == n.Price
+}
+
+func (n *Node) UpdatePrice(pricing *pricing.Provider) {
+	// lookup our n price
+	n.Price = math.NaN()
+	if n.IsOnDemand() {
+		if price, ok := pricing.OnDemandPrice(n.InstanceType()); ok {
+			n.Price = price
+		}
+	} else if n.IsSpot() {
+		if price, ok := pricing.SpotPrice(n.InstanceType(), n.Zone()); ok {
+			n.Price = price
+		}
+	} else if n.IsFargate() && len(n.Pods()) == 1 {
+		cpu, mem, ok := n.Pods()[0].FargateCapacityProvisioned()
+		if ok {
+			if price, ok := pricing.FargatePrice(cpu, mem); ok {
+				n.Price = price
+			}
+		}
+	}
 }
