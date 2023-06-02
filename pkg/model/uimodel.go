@@ -24,6 +24,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/duration"
 
 	"github.com/awslabs/eks-node-viewer/pkg/text"
 )
@@ -107,6 +108,8 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 				priceLabel = ""
 			}
 			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
+
+			// node compute type
 			if n.IsOnDemand() {
 				fmt.Fprintf(w, "\tOn-Demand")
 			} else if n.IsSpot() {
@@ -117,6 +120,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 				fmt.Fprintf(w, "\t-")
 			}
 
+			// node status
 			if n.Cordoned() && n.Deleting() {
 				fmt.Fprintf(w, "\tCordoned/Deleting")
 			} else if n.Deleting() {
@@ -127,14 +131,20 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 				fmt.Fprintf(w, "\t-")
 			}
 
+			// node readiness or time we've been waiting for it to be ready
 			if n.Ready() {
 				fmt.Fprintf(w, "\tReady")
 			} else {
-				fmt.Fprintf(w, "\t%s", time.Since(n.Created()).Round(time.Millisecond).String())
+				fmt.Fprintf(w, "\t%s", duration.HumanDuration(time.Since(n.Created())))
 			}
 
 			for _, label := range u.extraLabels {
-				fmt.Fprintf(w, "\t%s", n.node.Labels[label])
+				labelValue, ok := n.node.Labels[label]
+				if !ok {
+					// support computed label values
+					labelValue = n.ComputeLabel(label)
+				}
+				fmt.Fprintf(w, "\t%s", labelValue)
 			}
 
 		} else {

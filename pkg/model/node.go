@@ -21,6 +21,7 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/duration"
 
 	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
@@ -230,4 +231,13 @@ func (n *Node) UpdatePrice(pricing *pricing.Provider) {
 			}
 		}
 	}
+}
+
+// ComputeLabel computes dynamic labels
+func (n *Node) ComputeLabel(labelName string) string {
+	switch labelName {
+	case "eks-node-viewer/node-age":
+		return duration.HumanDuration(time.Since(n.Created()))
+	}
+	return labelName
 }
