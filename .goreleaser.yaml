@@ -19,6 +19,7 @@ builds:
       - arm64
     targets:
       - linux_amd64
+      - linux_arm64
       - windows_amd64
       - darwin_amd64
       - darwin_arm64
@@ -38,9 +39,6 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
     format: binary
 
 release:
