@@ -58,6 +58,12 @@ eks-node-viewer --extra-labels topology.kubernetes.io/zone
 AWS_PROFILE=myprofile AWS_REGION=us-west-2
 ```
 
+### Computed Labels
+
+`eks-node-viewer` supports some custom label names that can be passed to the `--extra-labels` to display additional node information. 
+
+- `eks-node-viewer/node-age` - Age of the node
+
 ### Default Options
 You can supply default options to `eks-node-viewer` by creating a file named `.eks-node-viewer` in your home directory and specifying
 options there. The format is `option-name=value` where the option names are the command line flags:
