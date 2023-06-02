@@ -77,7 +77,7 @@ func main() {
 	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
 	if !flags.DisablePricing {
-		sess := session.Must(session.NewSession(nil))
+		sess := session.Must(session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}))
 		updateAllPrices := func() {
 			m.Cluster().ForEachNode(func(n *model.Node) {
 				n.UpdatePrice(pprov)
