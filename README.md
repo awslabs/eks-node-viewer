@@ -15,6 +15,14 @@
 
 ### Installation
 
+#### Homebrew
+
+```bash
+brew tap aws/tap
+brew install eks-node-viewer
+```
+
+#### Manual
 Please either fetch the latest [release](https://github.com/awslabs/eks-node-viewer/releases) or install manually using:
 ```shell
 go install github.com/awslabs/eks-node-viewer/cmd/eks-node-viewer@latest
