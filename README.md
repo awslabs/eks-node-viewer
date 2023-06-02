@@ -63,6 +63,10 @@ AWS_PROFILE=myprofile AWS_REGION=us-west-2
 `eks-node-viewer` supports some custom label names that can be passed to the `--extra-labels` to display additional node information. 
 
 - `eks-node-viewer/node-age` - Age of the node
+- `eks-node-viewer/node-cpu-usage` - CPU usage (requests)
+- `eks-node-viewer/node-memory-usage` - Memory usage (requests)
+- `eks-node-viewer/node-pods-usage` - Pod usage (requests)
+- `eks-node-viewer/node-ephemeral-storage-usage` - Ephemeral Storage usage (requests)
 
 ### Default Options
 You can supply default options to `eks-node-viewer` by creating a file named `.eks-node-viewer` in your home directory and specifying

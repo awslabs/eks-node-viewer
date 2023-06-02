@@ -17,6 +17,7 @@ package model
 import (
 	"fmt"
 	"math"
+	"regexp"
 	"sync"
 	"time"
 
@@ -233,11 +234,33 @@ func (n *Node) UpdatePrice(pricing *pricing.Provider) {
 	}
 }
 
+var resourceLabelRe = regexp.MustCompile("eks-node-viewer/node-(.*?)-usage")
+
 // ComputeLabel computes dynamic labels
 func (n *Node) ComputeLabel(labelName string) string {
 	switch labelName {
 	case "eks-node-viewer/node-age":
 		return duration.HumanDuration(time.Since(n.Created()))
 	}
+	// resource based custom labels
+	if match := resourceLabelRe.FindStringSubmatch(labelName); len(match) > 0 {
+		return pctUsage(n.Allocatable(), n.Used(), match[1])
+	}
 	return labelName
+}
+
+func pctUsage(allocatable v1.ResourceList, used v1.ResourceList, resource string) string {
+	allocRes, hasAlloc := allocatable[v1.ResourceName(resource)]
+	if !hasAlloc {
+		return "N/A"
+	}
+	usedRes, hasUsed := used[v1.ResourceName(resource)]
+	if !hasUsed || usedRes.AsApproximateFloat64() == 0 {
+		return "0%"
+	}
+	pctUsed := 0.0
+	if allocRes.AsApproximateFloat64() != 0 {
+		pctUsed = 100 * (usedRes.AsApproximateFloat64() / allocRes.AsApproximateFloat64())
+	}
+	return fmt.Sprintf("%.0f%%", pctUsed)
 }
