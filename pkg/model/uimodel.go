@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -29,20 +30,33 @@ import (
 	"github.com/awslabs/eks-node-viewer/pkg/text"
 )
 
-var helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+var (
+	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+	// white / black
+	activeDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"}).Render("•")
+	// black / white
+	inactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
+)
 
 type UIModel struct {
 	progress    progress.Model
 	cluster     *Cluster
 	extraLabels []string
+	paginator   paginator.Model
+	height      int
 }
 
 func NewUIModel(extraLabels []string) *UIModel {
+	pager := paginator.New()
+	pager.Type = paginator.Dots
+	pager.ActiveDot = activeDot
+	pager.InactiveDot = inactiveDot
 	return &UIModel{
 		// red to green
 		progress:    progress.New(progress.WithGradient("#ff0000", "#04B575")),
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
+		paginator:   pager,
 	}
 }
 
@@ -51,7 +65,7 @@ func (u *UIModel) Cluster() *Cluster {
 }
 
 func (u *UIModel) Init() tea.Cmd {
-	return tickCmd()
+	return nil
 }
 
 var green = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
@@ -75,12 +89,18 @@ func (u *UIModel) View() string {
 		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
 
 	fmt.Fprintln(&b)
-	for _, n := range stats.Nodes {
+	// dynamically calculate the number of lines we can fit per page
+	// taking into account header and footer text
+	u.paginator.PerPage = u.height - 6
+	u.paginator.SetTotalPages(stats.NumNodes)
+	start, end := u.paginator.GetSliceBounds(stats.NumNodes)
+	for _, n := range stats.Nodes[start:end] {
 		u.writeNodeInfo(n, ctw, u.cluster.resources)
 	}
 	ctw.Flush()
 
-	fmt.Fprintln(&b, helpStyle("Press any key to quit"))
+	fmt.Fprintln(&b, u.paginator.View())
+	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
 	return b.String()
 }
 
@@ -200,14 +220,21 @@ func tickCmd() tea.Cmd {
 }
 
 func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		u.height = msg.Height
+		return u, tickCmd()
 	case tea.KeyMsg:
-		return u, tea.Quit
+		switch msg.String() {
+		case "q", "esc", "ctrl+c":
+			return u, tea.Quit
+		}
 	case tickMsg:
 		return u, tickCmd()
-	default:
-		return u, nil
 	}
+	var cmd tea.Cmd
+	u.paginator, cmd = u.paginator.Update(msg)
+	return u, cmd
 }
 
 func (u *UIModel) SetResources(resources []string) {
