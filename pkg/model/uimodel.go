@@ -15,6 +15,7 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
@@ -39,11 +40,12 @@ var (
 )
 
 type UIModel struct {
-	progress    progress.Model
-	cluster     *Cluster
-	extraLabels []string
-	paginator   paginator.Model
-	height      int
+	progress     progress.Model
+	cluster      *Cluster
+	extraLabels  []string
+	paginator    paginator.Model
+	height       int
+	itemsPerPage int
 }
 
 func NewUIModel(extraLabels []string) *UIModel {
@@ -89,9 +91,7 @@ func (u *UIModel) View() string {
 		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
 
 	fmt.Fprintln(&b)
-	// dynamically calculate the number of lines we can fit per page
-	// taking into account header and footer text
-	u.paginator.PerPage = u.height - 6
+	u.paginator.PerPage = u.computeItemsPerPage(stats.Nodes, &b)
 	u.paginator.SetTotalPages(stats.NumNodes)
 	start, end := u.paginator.GetSliceBounds(stats.NumNodes)
 	for _, n := range stats.Nodes[start:end] {
@@ -209,6 +209,22 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		}
 		firstLine = false
 	}
+}
+
+// computeItemsPerPage dynamically calculates the number of lines we can fit per page
+// taking into account header and footer text
+func (u *UIModel) computeItemsPerPage(nodes []*Node, b *strings.Builder) int {
+	if u.itemsPerPage != 0 {
+		return u.itemsPerPage
+	}
+	var buf bytes.Buffer
+	u.writeNodeInfo(nodes[0], &buf, u.cluster.resources)
+	headerLines := strings.Count(b.String(), "\n") + 2
+	nodeLines := strings.Count(buf.String(), "\n")
+	if nodeLines == 0 {
+		nodeLines = 1
+	}
+	return ((u.height - headerLines) / nodeLines) - 1
 }
 
 type tickMsg time.Time
