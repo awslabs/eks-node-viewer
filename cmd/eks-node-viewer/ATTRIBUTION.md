@@ -470,9 +470,9 @@ SOFTWARE.
 
 ```
 
-## github.com/charmbracelet/bubbles/progress
+## github.com/charmbracelet/bubbles
 
-* Name: github.com/charmbracelet/bubbles/progress
+* Name: github.com/charmbracelet/bubbles
 * Version: v0.15.0
 * License: [MIT](https://github.com/charmbracelet/bubbles/blob/v0.15.0/LICENSE)
 

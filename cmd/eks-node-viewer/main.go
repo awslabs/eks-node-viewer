@@ -184,6 +184,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 						log.Println("unable to find node", n.Name)
 					} else {
 						node.Update(n)
+						node.UpdatePrice(settings.pricing)
 					}
 					node.Show()
 				}

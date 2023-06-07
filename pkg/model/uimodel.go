@@ -15,11 +15,13 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -29,20 +31,33 @@ import (
 	"github.com/awslabs/eks-node-viewer/pkg/text"
 )
 
-var helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+var (
+	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+	// white / black
+	activeDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"}).Render("•")
+	// black / white
+	inactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
+)
 
 type UIModel struct {
 	progress    progress.Model
 	cluster     *Cluster
 	extraLabels []string
+	paginator   paginator.Model
+	height      int
 }
 
 func NewUIModel(extraLabels []string) *UIModel {
+	pager := paginator.New()
+	pager.Type = paginator.Dots
+	pager.ActiveDot = activeDot
+	pager.InactiveDot = inactiveDot
 	return &UIModel{
 		// red to green
 		progress:    progress.New(progress.WithGradient("#ff0000", "#04B575")),
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
+		paginator:   pager,
 	}
 }
 
@@ -51,7 +66,7 @@ func (u *UIModel) Cluster() *Cluster {
 }
 
 func (u *UIModel) Init() tea.Cmd {
-	return tickCmd()
+	return nil
 }
 
 var green = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
@@ -75,12 +90,21 @@ func (u *UIModel) View() string {
 		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
 
 	fmt.Fprintln(&b)
-	for _, n := range stats.Nodes {
+	u.paginator.PerPage = u.computeItemsPerPage(stats.Nodes, &b)
+	u.paginator.SetTotalPages(stats.NumNodes)
+	// check if we're on a page that is outside of the NumNode upper bound
+	if u.paginator.Page*u.paginator.PerPage > stats.NumNodes {
+		// set the page to the last page
+		u.paginator.Page = u.paginator.TotalPages - 1
+	}
+	start, end := u.paginator.GetSliceBounds(stats.NumNodes)
+	for _, n := range stats.Nodes[start:end] {
 		u.writeNodeInfo(n, ctw, u.cluster.resources)
 	}
 	ctw.Flush()
 
-	fmt.Fprintln(&b, helpStyle("Press any key to quit"))
+	fmt.Fprintln(&b, u.paginator.View())
+	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
 	return b.String()
 }
 
@@ -191,6 +215,19 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 	}
 }
 
+// computeItemsPerPage dynamically calculates the number of lines we can fit per page
+// taking into account header and footer text
+func (u *UIModel) computeItemsPerPage(nodes []*Node, b *strings.Builder) int {
+	var buf bytes.Buffer
+	u.writeNodeInfo(nodes[0], &buf, u.cluster.resources)
+	headerLines := strings.Count(b.String(), "\n") + 2
+	nodeLines := strings.Count(buf.String(), "\n")
+	if nodeLines == 0 {
+		nodeLines = 1
+	}
+	return ((u.height - headerLines) / nodeLines) - 1
+}
+
 type tickMsg time.Time
 
 func tickCmd() tea.Cmd {
@@ -200,14 +237,21 @@ func tickCmd() tea.Cmd {
 }
 
 func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		u.height = msg.Height
+		return u, tickCmd()
 	case tea.KeyMsg:
-		return u, tea.Quit
+		switch msg.String() {
+		case "q", "esc", "ctrl+c":
+			return u, tea.Quit
+		}
 	case tickMsg:
 		return u, tickCmd()
-	default:
-		return u, nil
 	}
+	var cmd tea.Cmd
+	u.paginator, cmd = u.paginator.Update(msg)
+	return u, cmd
 }
 
 func (u *UIModel) SetResources(resources []string) {
