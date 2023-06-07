@@ -8,8 +8,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.44.271
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.271/LICENSE.txt)
+* Version: v1.44.277
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.277/LICENSE.txt)
 
 ```
 
@@ -220,8 +220,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.44.271
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.271/internal/sync/singleflight/LICENSE)
+* Version: v1.44.277
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.277/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -473,13 +473,13 @@ SOFTWARE.
 ## github.com/charmbracelet/bubbles
 
 * Name: github.com/charmbracelet/bubbles
-* Version: v0.15.0
-* License: [MIT](https://github.com/charmbracelet/bubbles/blob/v0.15.0/LICENSE)
+* Version: v0.16.1
+* License: [MIT](https://github.com/charmbracelet/bubbles/blob/v0.16.1/LICENSE)
 
 ```
 MIT License
 
-Copyright (c) 2020 Charmbracelet, Inc
+Copyright (c) 2020-2023 Charmbracelet, Inc
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
