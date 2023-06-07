@@ -92,6 +92,11 @@ func (u *UIModel) View() string {
 	fmt.Fprintln(&b)
 	u.paginator.PerPage = u.computeItemsPerPage(stats.Nodes, &b)
 	u.paginator.SetTotalPages(stats.NumNodes)
+	// check if we're on a page that is outside of the NumNode upper bound
+	if u.paginator.Page*u.paginator.PerPage > stats.NumNodes {
+		// set the page to the last page
+		u.paginator.Page = u.paginator.TotalPages - 1
+	}
 	start, end := u.paginator.GetSliceBounds(stats.NumNodes)
 	for _, n := range stats.Nodes[start:end] {
 		u.writeNodeInfo(n, ctw, u.cluster.resources)
