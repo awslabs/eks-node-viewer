@@ -40,12 +40,11 @@ var (
 )
 
 type UIModel struct {
-	progress     progress.Model
-	cluster      *Cluster
-	extraLabels  []string
-	paginator    paginator.Model
-	height       int
-	itemsPerPage int
+	progress    progress.Model
+	cluster     *Cluster
+	extraLabels []string
+	paginator   paginator.Model
+	height      int
 }
 
 func NewUIModel(extraLabels []string) *UIModel {
@@ -214,9 +213,6 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 // computeItemsPerPage dynamically calculates the number of lines we can fit per page
 // taking into account header and footer text
 func (u *UIModel) computeItemsPerPage(nodes []*Node, b *strings.Builder) int {
-	if u.itemsPerPage != 0 {
-		return u.itemsPerPage
-	}
 	var buf bytes.Buffer
 	u.writeNodeInfo(nodes[0], &buf, u.cluster.resources)
 	headerLines := strings.Count(b.String(), "\n") + 2
