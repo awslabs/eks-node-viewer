@@ -78,7 +78,11 @@ func (u *UIModel) View() string {
 
 	stats := u.cluster.Stats()
 	if stats.NumNodes == 0 {
-		return "Waiting for update or no nodes found..."
+		fmt.Fprintln(&b, "Waiting for update or no nodes found...")
+		fmt.Fprintln(&b, u.paginator.View())
+		fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+
+		return b.String()
 	}
 
 	ctw := text.NewColorTabWriter(&b, 0, 8, 1)
