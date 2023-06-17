@@ -8,8 +8,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.44.277
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.277/LICENSE.txt)
+* Version: v1.44.281
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.281/LICENSE.txt)
 
 ```
 
@@ -220,8 +220,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.44.277
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.277/internal/sync/singleflight/LICENSE)
+* Version: v1.44.281
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.281/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -504,8 +504,8 @@ SOFTWARE.
 ## github.com/charmbracelet/bubbletea
 
 * Name: github.com/charmbracelet/bubbletea
-* Version: v0.24.1
-* License: [MIT](https://github.com/charmbracelet/bubbletea/blob/v0.24.1/LICENSE)
+* Version: v0.24.2
+* License: [MIT](https://github.com/charmbracelet/bubbletea/blob/v0.24.2/LICENSE)
 
 ```
 MIT License
