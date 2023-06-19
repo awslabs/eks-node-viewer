@@ -8,8 +8,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.44.281
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.281/LICENSE.txt)
+* Version: v1.44.285
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.285/LICENSE.txt)
 
 ```
 
@@ -220,8 +220,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.44.281
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.281/internal/sync/singleflight/LICENSE)
+* Version: v1.44.285
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.285/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -3879,8 +3879,8 @@ limitations under the License.
 ## k8s.io/api
 
 * Name: k8s.io/api
-* Version: v0.27.2
-* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.27.2/LICENSE)
+* Version: v0.27.3
+* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.27.3/LICENSE)
 
 ```
 
@@ -4091,8 +4091,8 @@ limitations under the License.
 ## k8s.io/apimachinery/pkg
 
 * Name: k8s.io/apimachinery/pkg
-* Version: v0.27.2
-* License: [Apache-2.0](https://github.com/kubernetes/apimachinery/blob/v0.27.2/LICENSE)
+* Version: v0.27.3
+* License: [Apache-2.0](https://github.com/kubernetes/apimachinery/blob/v0.27.3/LICENSE)
 
 ```
 
@@ -4303,8 +4303,8 @@ limitations under the License.
 ## k8s.io/apimachinery/third_party/forked/golang/reflect
 
 * Name: k8s.io/apimachinery/third_party/forked/golang/reflect
-* Version: v0.27.2
-* License: [BSD-3-Clause](https://github.com/kubernetes/apimachinery/blob/v0.27.2/third_party/forked/golang/LICENSE)
+* Version: v0.27.3
+* License: [BSD-3-Clause](https://github.com/kubernetes/apimachinery/blob/v0.27.3/third_party/forked/golang/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -4340,8 +4340,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/client-go
 
 * Name: k8s.io/client-go
-* Version: v0.27.2
-* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.27.2/LICENSE)
+* Version: v0.27.3
+* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.27.3/LICENSE)
 
 ```
 
