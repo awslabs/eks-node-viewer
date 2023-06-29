@@ -56,7 +56,7 @@ Usage of ./eks-node-viewer:
 ```shell
 # Standard usage
 eks-node-viewer
-# Karenter nodes only
+# Karpenter nodes only
 eks-node-viewer --node-selector "karpenter.sh/provisioner-name"
 # Display both CPU and Memory Usage
 eks-node-viewer --resources cpu,memory
