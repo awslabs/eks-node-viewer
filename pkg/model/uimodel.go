@@ -53,8 +53,8 @@ func NewUIModel(extraLabels []string) *UIModel {
 	pager.ActiveDot = activeDot
 	pager.InactiveDot = inactiveDot
 	return &UIModel{
-		// red to green
-		progress:    progress.New(progress.WithGradient("#ff0000", "#04B575")),
+		// green to red indicating low util to high util
+		progress:    progress.New(progress.WithGradient("#02d630", "#ff0000")),
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
 		paginator:   pager,
@@ -69,7 +69,7 @@ func (u *UIModel) Init() tea.Cmd {
 	return nil
 }
 
-var green = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
+var green = lipgloss.NewStyle().Foreground(lipgloss.Color("#02d630")).Render
 var yellow = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFF00")).Render
 var red = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")).Render
 
@@ -197,12 +197,12 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 			pctUsed = 100 * (used.AsApproximateFloat64() / allocatable.AsApproximateFloat64())
 		}
 		pctUsedStr := fmt.Sprintf("%0.1f%%", pctUsed)
-		if pctUsed > 90 {
-			pctUsedStr = green(pctUsedStr)
+		if pctUsed > 90 { //text indication changed to match progress bar colors
+			pctUsedStr = red(pctUsedStr)
 		} else if pctUsed > 60 {
 			pctUsedStr = yellow(pctUsedStr)
 		} else {
-			pctUsedStr = red(pctUsedStr)
+			pctUsedStr = green(pctUsedStr)
 		}
 
 		u.progress.ShowPercentage = false
