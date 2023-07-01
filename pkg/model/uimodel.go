@@ -39,6 +39,9 @@ var (
 	inactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
 )
 
+var a = "#02d630" //green
+var b = "#ff0000" //red
+
 type UIModel struct {
 	progress    progress.Model
 	cluster     *Cluster
@@ -47,14 +50,20 @@ type UIModel struct {
 	height      int
 }
 
+func ModelInvertColors() {
+	a = "#ff0000" //red
+	b = "#02d630" //green
+	//this is really simple, but it works!
+}
+
 func NewUIModel(extraLabels []string) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
 	pager.InactiveDot = inactiveDot
 	return &UIModel{
-		// green to red indicating low util to high util
-		progress:    progress.New(progress.WithGradient("#02d630", "#ff0000")),
+		// When flag -invert-colors is used, a becomes red
+		progress:    progress.New(progress.WithGradient(b, a)),
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
 		paginator:   pager,

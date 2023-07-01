@@ -65,6 +65,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if flags.InvertColors {
+		model.ModelInvertColors()
+	}
+
 	cs, err := client.Create(flags.Kubeconfig, flags.Context)
 	if err != nil {
 		log.Fatalf("creating client, %s", err)

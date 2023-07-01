@@ -49,6 +49,7 @@ type Flags struct {
 	DisablePricing  bool
 	ShowAttribution bool
 	Version         bool
+	InvertColors    bool
 }
 
 func ParseFlags() (Flags, error) {
@@ -83,6 +84,9 @@ func ParseFlags() (Flags, error) {
 	flagSet.BoolVar(&flags.DisablePricing, "disable-pricing", disablePricingDefault, "Disable pricing lookups")
 
 	flagSet.BoolVar(&flags.ShowAttribution, "attribution", false, "Show the Open Source Attribution")
+
+	invertColorsDefault := cfg.getBoolValue("invert-colors", false)
+	flagSet.BoolVar(&flags.InvertColors, "invert-colors", invertColorsDefault, "Invert colors of the utilization bar")
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		return Flags{}, err
