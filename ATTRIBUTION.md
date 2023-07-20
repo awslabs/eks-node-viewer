@@ -8,8 +8,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.44.285
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.285/LICENSE.txt)
+* Version: v1.44.301
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.44.301/LICENSE.txt)
 
 ```
 
@@ -220,8 +220,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.44.285
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.285/internal/sync/singleflight/LICENSE)
+* Version: v1.44.301
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.44.301/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
