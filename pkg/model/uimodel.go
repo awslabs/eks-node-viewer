@@ -77,13 +77,6 @@ func (u *UIModel) View() string {
 	b := strings.Builder{}
 
 	stats := u.cluster.Stats()
-	if stats.NumNodes == 0 {
-		fmt.Fprintln(&b, "Waiting for update or no nodes found...")
-		fmt.Fprintln(&b, u.paginator.View())
-		fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
-
-		return b.String()
-	}
 
 	ctw := text.NewColorTabWriter(&b, 0, 8, 1)
 	u.writeClusterSummary(u.cluster.resources, stats, ctw)
@@ -92,6 +85,14 @@ func (u *UIModel) View() string {
 
 	fmt.Fprintf(&b, "%d pods (%d pending %d running %d bound)\n", stats.TotalPods,
 		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
+
+	if stats.NumNodes == 0 {
+		fmt.Fprintln(&b)
+		fmt.Fprintln(&b, "Waiting for update or no nodes found...")
+		fmt.Fprintln(&b, u.paginator.View())
+		fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+		return b.String()
+	}
 
 	fmt.Fprintln(&b)
 	u.paginator.PerPage = u.computeItemsPerPage(stats.Nodes, &b)
