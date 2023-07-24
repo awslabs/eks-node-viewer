@@ -9,8 +9,8 @@ require (
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/samber/lo v1.38.1
 	go.uber.org/multierr v1.11.0
-	k8s.io/api v0.27.3
-	k8s.io/apimachinery v0.27.3
+	k8s.io/api v0.27.4
+	k8s.io/apimachinery v0.27.4
 	k8s.io/client-go v0.27.3
 )
 
