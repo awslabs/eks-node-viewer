@@ -100,7 +100,7 @@ func main() {
 		pricing:      pprov,
 	}
 	startMonitor(ctx, monitorSettings)
-	if err := tea.NewProgram(m, tea.WithAltScreen()).Start(); err != nil {
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		log.Fatalf("error running tea: %s", err)
 	}
 	cancel()
@@ -126,7 +126,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 			AddFunc: func(obj interface{}) {
 				p := obj.(*v1.Pod)
 				if !isTerminalPod(p) {
-					cluster.AddPod(model.NewPod(p), settings.pricing)
+					cluster.AddPod(model.NewPod(p))
 					node, ok := cluster.GetNode(p.Spec.NodeName)
 					// need to potentially update node price as we need the fargate pod in order to figure out the cost
 					if ok && node.IsFargate() && !node.HasPrice() {
@@ -145,10 +145,10 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 				} else {
 					pod, ok := cluster.GetPod(p.Namespace, p.Name)
 					if !ok {
-						cluster.AddPod(model.NewPod(p), settings.pricing)
+						cluster.AddPod(model.NewPod(p))
 					} else {
 						pod.Update(p)
-						cluster.AddPod(pod, settings.pricing)
+						cluster.AddPod(pod)
 					}
 				}
 			},

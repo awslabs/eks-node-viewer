@@ -48,7 +48,7 @@ func main() {
 	}
 }
 
-func addLicense(path string, d fs.DirEntry, err error) error {
+func addLicense(path string, _ fs.DirEntry, err error) error {
 	if !strings.HasSuffix(path, ".go") {
 		return nil
 	}
