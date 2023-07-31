@@ -164,7 +164,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			if n.Ready() {
 				fmt.Fprintf(w, "\tReady")
 			} else {
-				fmt.Fprintf(w, "\t%s", duration.HumanDuration(time.Since(n.Created())))
+				fmt.Fprintf(w, "\tNotReady/%s", duration.HumanDuration(time.Since(n.NotReadyTime())))
 			}
 
 			for _, label := range u.extraLabels {
