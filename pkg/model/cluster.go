@@ -20,8 +20,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 )
 
 type Cluster struct {
@@ -80,7 +78,7 @@ func (c *Cluster) GetNode(name string) (*Node, bool) {
 	return n, ok
 }
 
-func (c *Cluster) AddPod(pod *Pod, pprov *pricing.Provider) (totalPods int) {
+func (c *Cluster) AddPod(pod *Pod) (totalPods int) {
 	c.mu.Lock()
 	c.pods[objectKey{namespace: pod.Namespace(), name: pod.Name()}] = pod
 	totalPods = len(c.pods)
