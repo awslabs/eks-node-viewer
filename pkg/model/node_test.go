@@ -15,6 +15,7 @@ package model_test
 
 import (
 	"testing"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -115,5 +116,51 @@ func TestNodeTypeFargate(t *testing.T) {
 		if !node.IsFargate() {
 			t.Errorf("exepcted to be fargate")
 		}
+	}
+}
+
+func TestNodeNotReadyFalse(t *testing.T) {
+	for _, status := range []v1.ConditionStatus{v1.ConditionFalse, v1.ConditionUnknown} {
+		t.Run(string(status), func(t *testing.T) {
+			n := testNode("mynode")
+			n.Status.Phase = v1.NodeRunning
+			notReadyTime := time.Now().Add(-1 * time.Hour)
+
+			n.Status.Conditions = append(n.Status.Conditions, v1.NodeCondition{
+				Type:   v1.NodeReady,
+				Status: status,
+				LastTransitionTime: metav1.Time{
+					Time: notReadyTime,
+				},
+			})
+			node := model.NewNode(n)
+			if node.Ready() {
+				t.Fatalf("expected node to be not ready")
+			}
+
+			if node.NotReadyTime() != notReadyTime {
+				t.Errorf("expected not ready time = %s, got %s", notReadyTime, node.NotReadyTime())
+			}
+		})
+	}
+}
+
+func TestNodeNotReadyNoCondition(t *testing.T) {
+	for _, status := range []v1.ConditionStatus{v1.ConditionFalse, v1.ConditionUnknown} {
+		t.Run(string(status), func(t *testing.T) {
+			n := testNode("mynode")
+			n.Status.Phase = v1.NodeRunning
+			notReadyTime := time.Now().Add(-1 * time.Hour)
+			n.CreationTimestamp = metav1.NewTime(notReadyTime)
+
+			node := model.NewNode(n)
+			if node.Ready() {
+				t.Fatalf("expected node to be not ready")
+			}
+
+			if node.NotReadyTime() != notReadyTime {
+				t.Errorf("expected not ready time = %s, got %s", notReadyTime, node.NotReadyTime())
+			}
+		})
 	}
 }

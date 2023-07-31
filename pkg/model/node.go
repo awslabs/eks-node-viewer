@@ -249,6 +249,23 @@ func (n *Node) ComputeLabel(labelName string) string {
 	return labelName
 }
 
+// NotReadyTime is the time that the node went NotReady, or when it was created if it hasn't been marked as NotReady.
+func (n *Node) NotReadyTime() time.Time {
+	n.mu.RLock()
+	var notReadyTransitionTime time.Time
+	for _, c := range n.node.Status.Conditions {
+		if c.Type == v1.NodeReady && (c.Status == v1.ConditionFalse || c.Status == v1.ConditionUnknown) {
+			notReadyTransitionTime = c.LastTransitionTime.Time
+			break
+		}
+	}
+	n.mu.RUnlock()
+	if !notReadyTransitionTime.IsZero() {
+		return notReadyTransitionTime
+	}
+	return n.Created()
+}
+
 func pctUsage(allocatable v1.ResourceList, used v1.ResourceList, resource string) string {
 	allocRes, hasAlloc := allocatable[v1.ResourceName(resource)]
 	if !hasAlloc {
