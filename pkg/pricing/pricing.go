@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/pricing"
 	"github.com/aws/aws-sdk-go/service/pricing/pricingiface"
-	"github.com/samber/lo"
 	"go.uber.org/multierr"
 )
 
@@ -128,13 +127,6 @@ func NewProvider(ctx context.Context, sess *session.Session, notify func()) *Pro
 		}
 	}()
 	return p
-}
-
-// InstanceTypes returns the list of all instance types for which either a spot or on-demand price is known.
-func (p *Provider) InstanceTypes() []string {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	return lo.Union(lo.Keys(p.onDemandPrices), lo.Keys(p.spotPrices))
 }
 
 // OnDemandLastUpdated returns the time that the on-demand pricing was last updated
@@ -269,7 +261,12 @@ func (p *Provider) updateOnDemandPricing(ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.onDemandPrices = lo.Assign(onDemandPrices, onDemandMetalPrices)
+	p.onDemandPrices = map[string]float64{}
+	for _, m := range []map[string]float64{onDemandPrices, onDemandMetalPrices} {
+		for k, v := range m {
+			p.onDemandPrices[k] = v
+		}
+	}
 	p.onDemandUpdateTime = time.Now()
 	return nil
 }
