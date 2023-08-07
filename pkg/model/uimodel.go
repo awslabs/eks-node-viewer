@@ -103,8 +103,10 @@ func (u *UIModel) View() string {
 		u.paginator.Page = u.paginator.TotalPages - 1
 	}
 	start, end := u.paginator.GetSliceBounds(stats.NumNodes)
-	for _, n := range stats.Nodes[start:end] {
-		u.writeNodeInfo(n, ctw, u.cluster.resources)
+	if start >= 0 && end >= start {
+		for _, n := range stats.Nodes[start:end] {
+			u.writeNodeInfo(n, ctw, u.cluster.resources)
+		}
 	}
 	ctw.Flush()
 
