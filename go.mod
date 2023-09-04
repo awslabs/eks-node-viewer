@@ -3,7 +3,7 @@ module github.com/awslabs/eks-node-viewer
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.44.307
+	github.com/aws/aws-sdk-go v1.45.2
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.7.1
