@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ import (
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/facette/natsort"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
 
@@ -45,9 +47,10 @@ type UIModel struct {
 	extraLabels []string
 	paginator   paginator.Model
 	height      int
+	nodeSorter  func(lhs, rhs *Node) bool
 }
 
-func NewUIModel(extraLabels []string) *UIModel {
+func NewUIModel(extraLabels []string, nodeSort string) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
@@ -58,6 +61,7 @@ func NewUIModel(extraLabels []string) *UIModel {
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
 		paginator:   pager,
+		nodeSorter:  makeNodeSorter(nodeSort),
 	}
 }
 
@@ -77,6 +81,10 @@ func (u *UIModel) View() string {
 	b := strings.Builder{}
 
 	stats := u.cluster.Stats()
+
+	sort.Slice(stats.Nodes, func(a, b int) bool {
+		return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
+	})
 
 	ctw := text.NewColorTabWriter(&b, 0, 8, 1)
 	u.writeClusterSummary(u.cluster.resources, stats, ctw)
@@ -265,5 +273,40 @@ func (u *UIModel) SetResources(resources []string) {
 	u.cluster.resources = nil
 	for _, r := range resources {
 		u.cluster.resources = append(u.cluster.resources, v1.ResourceName(r))
+	}
+}
+
+func makeNodeSorter(nodeSort string) func(lhs *Node, rhs *Node) bool {
+	sortOrder := func(b bool) bool { return b }
+	if strings.HasSuffix(nodeSort, "=asc") {
+		nodeSort = nodeSort[:len(nodeSort)-4]
+	}
+	if strings.HasSuffix(nodeSort, "=dsc") {
+		sortOrder = func(b bool) bool { return !b }
+		nodeSort = nodeSort[:len(nodeSort)-4]
+	}
+
+	if nodeSort == "creation" {
+		return func(lhs *Node, rhs *Node) bool {
+			if lhs.Created() == rhs.Created() {
+				return sortOrder(natsort.Compare(lhs.Name(), rhs.Name()))
+			}
+			return sortOrder(rhs.Created().Before(lhs.Created()))
+		}
+	}
+
+	return func(lhs *Node, rhs *Node) bool {
+		lhsLabel, ok := lhs.node.Labels[nodeSort]
+		if !ok {
+			lhsLabel = lhs.ComputeLabel(nodeSort)
+		}
+		rhsLabel, ok := rhs.node.Labels[nodeSort]
+		if !ok {
+			rhsLabel = rhs.ComputeLabel(nodeSort)
+		}
+		if lhsLabel == rhsLabel {
+			return sortOrder(natsort.Compare(lhs.Name(), rhs.Name()))
+		}
+		return sortOrder(natsort.Compare(lhsLabel, rhsLabel))
 	}
 }
