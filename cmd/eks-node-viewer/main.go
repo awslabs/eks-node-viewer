@@ -73,7 +73,11 @@ func main() {
 
 	defaults.SharedCredentialsFilename()
 	pprov := pricing.NewStaticProvider()
-	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort)
+	style, err := model.ParseStyle(flags.Style)
+	if err != nil {
+		log.Fatalf("creating style, %s", err)
+	}
+	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style)
 	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
 	if !flags.DisablePricing {

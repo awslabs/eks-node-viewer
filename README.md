@@ -49,6 +49,8 @@ Usage of ./eks-node-viewer:
     	Sort order for the nodes, either 'creation' or a label name. The sort order can be controlled by appending =asc or =dsc to the value. (default "creation")
   -resources string
     	List of comma separated resources to monitor (default "cpu")
+  -style string
+    	Three color to use for styling 'good','ok' and 'bad' values. These are also used in the gradients displayed from bad -> good. (default "#04B575,#FFFF00,#FF0000")
   -v	Display eks-node-viewer version
   -version
     	Display eks-node-viewer version

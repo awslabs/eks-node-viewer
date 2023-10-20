@@ -48,20 +48,22 @@ type UIModel struct {
 	paginator   paginator.Model
 	height      int
 	nodeSorter  func(lhs, rhs *Node) bool
+	style       *Style
 }
 
-func NewUIModel(extraLabels []string, nodeSort string) *UIModel {
+func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
 	pager.InactiveDot = inactiveDot
 	return &UIModel{
 		// red to green
-		progress:    progress.New(progress.WithGradient("#ff0000", "#04B575")),
+		progress:    progress.New(style.gradient),
 		cluster:     NewCluster(),
 		extraLabels: extraLabels,
 		paginator:   pager,
 		nodeSorter:  makeNodeSorter(nodeSort),
+		style:       style,
 	}
 }
 
@@ -72,10 +74,6 @@ func (u *UIModel) Cluster() *Cluster {
 func (u *UIModel) Init() tea.Cmd {
 	return nil
 }
-
-var green = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
-var yellow = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFF00")).Render
-var red = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")).Render
 
 func (u *UIModel) View() string {
 	b := strings.Builder{}
@@ -209,11 +207,11 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		}
 		pctUsedStr := fmt.Sprintf("%0.1f%%", pctUsed)
 		if pctUsed > 90 {
-			pctUsedStr = green(pctUsedStr)
+			pctUsedStr = u.style.green(pctUsedStr)
 		} else if pctUsed > 60 {
-			pctUsedStr = yellow(pctUsedStr)
+			pctUsedStr = u.style.yellow(pctUsedStr)
 		} else {
-			pctUsedStr = red(pctUsedStr)
+			pctUsedStr = u.style.red(pctUsedStr)
 		}
 
 		u.progress.ShowPercentage = false
