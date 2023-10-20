@@ -15,7 +15,6 @@ limitations under the License.
 package model
 
 import (
-	"sort"
 	"sync"
 
 	v1 "k8s.io/api/core/v1"
@@ -157,15 +156,6 @@ func (c *Cluster) Stats() Stats {
 		addResources(st.AllocatableResources, n.Allocatable())
 		addResources(st.UsedResources, n.Used())
 	}
-
-	sort.Slice(st.Nodes, func(a, b int) bool {
-		aCreated := st.Nodes[a].Created()
-		bCreated := st.Nodes[b].Created()
-		if aCreated == bCreated {
-			return st.Nodes[a].Name() < st.Nodes[b].Name()
-		}
-		return st.Nodes[a].Created().Before(st.Nodes[b].Created())
-	})
 	return st
 }
 

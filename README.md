@@ -45,6 +45,8 @@ Usage of ./eks-node-viewer:
     	Absolute path to the kubeconfig file (default "~/.kube/config")
   -node-selector string
     	Node label selector used to filter nodes, if empty all nodes are selected
+  -node-sort string
+    	Sort order for the nodes, either 'creation' or a label name. The sort order can be controlled by appending =asc or =dsc to the value. (default "creation")
   -resources string
     	List of comma separated resources to monitor (default "cpu")
   -v	Display eks-node-viewer version
@@ -62,6 +64,8 @@ eks-node-viewer --node-selector "karpenter.sh/provisioner-name"
 eks-node-viewer --resources cpu,memory
 # Display extra labels, i.e. AZ
 eks-node-viewer --extra-labels topology.kubernetes.io/zone
+# Sort by CPU usage in descending order
+eks-node-viewer --node-sort=eks-node-viewer/node-cpu-usage=dsc
 # Specify a particular AWS profile and region
 AWS_PROFILE=myprofile AWS_REGION=us-west-2
 ```
@@ -85,6 +89,12 @@ node-selector=karpenter.sh/provisioner-name
 
 # display both CPU and memory
 resources=cpu,memory
+
+# show the zone and provisioner name by default
+extra-labels=topology.kubernetes.io/zone,karpenter.sh/provisioner-name
+
+# sort so that the newest nodes are first
+node-sort=creation=asc
 ```
 
 ### Troubleshooting

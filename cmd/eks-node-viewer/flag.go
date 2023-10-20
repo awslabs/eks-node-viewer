@@ -44,6 +44,7 @@ type Flags struct {
 	Context         string
 	NodeSelector    string
 	ExtraLabels     string
+	NodeSort        string
 	Kubeconfig      string
 	Resources       string
 	DisablePricing  bool
@@ -71,6 +72,9 @@ func ParseFlags() (Flags, error) {
 
 	extraLabelsDefault := cfg.getValue("extra-labels", "")
 	flagSet.StringVar(&flags.ExtraLabels, "extra-labels", extraLabelsDefault, "A comma separated set of extra node labels to display")
+
+	nodeSort := cfg.getValue("node-sort", "creation=dsc")
+	flagSet.StringVar(&flags.NodeSort, "node-sort", nodeSort, "Sort order for the nodes, either 'creation' or a label name. The sort order defaults to ascending and can be controlled by appending =asc or =dsc to the value.")
 
 	// flag overrides env. var. and env. var. overrides config file
 	kubeconfigDefault := getStringEnv("KUBECONFIG", cfg.getValue("kubeconfig", filepath.Join(homeDir, ".kube", "config")))
