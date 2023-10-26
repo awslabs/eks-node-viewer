@@ -27,6 +27,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/facette/natsort"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
 
@@ -88,8 +90,9 @@ func (u *UIModel) View() string {
 	u.writeClusterSummary(u.cluster.resources, stats, ctw)
 	ctw.Flush()
 	u.progress.ShowPercentage = true
-
-	fmt.Fprintf(&b, "%d pods (%d pending %d running %d bound)\n", stats.TotalPods,
+	// message printer formats numbers nicely with commas
+	enPrinter := message.NewPrinter(language.English)
+	enPrinter.Fprintf(&b, "%d pods (%d pending %d running %d bound)\n", stats.TotalPods,
 		stats.PodsByPhase[v1.PodPending], stats.PodsByPhase[v1.PodRunning], stats.BoundPodCount)
 
 	if stats.NumNodes == 0 {
@@ -216,12 +219,14 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 
 		u.progress.ShowPercentage = false
 		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
-		clusterPrice := fmt.Sprintf("$%0.3f/hour | $%0.3f/month", stats.TotalPrice, monthlyPrice)
+		// message printer formats numbers nicely with commas
+		enPrinter := message.NewPrinter(language.English)
+		clusterPrice := enPrinter.Sprintf("$%0.3f/hour | $%0.3f/month", stats.TotalPrice, monthlyPrice)
 		if firstLine {
-			fmt.Fprintf(w, "%d nodes\t(%s/%s)\t%s\t%s\t%s\t%s\n",
+			enPrinter.Fprintf(w, "%d nodes\t(%s/%s)\t%s\t%s\t%s\t%s\n",
 				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
 		} else {
-			fmt.Fprintf(w, " \t%s/%s\t%s\t%s\t%s\t\n",
+			enPrinter.Fprintf(w, " \t%s/%s\t%s\t%s\t%s\t\n",
 				used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0))
 		}
 		firstLine = false
@@ -303,7 +308,7 @@ func makeNodeSorter(nodeSort string) func(lhs *Node, rhs *Node) bool {
 			rhsLabel = rhs.ComputeLabel(nodeSort)
 		}
 		if lhsLabel == rhsLabel {
-			return sortOrder(natsort.Compare(lhs.Name(), rhs.Name()))
+			return sortOrder(natsort.Compare(lhs.ProviderID(), rhs.ProviderID()))
 		}
 		return sortOrder(natsort.Compare(lhsLabel, rhsLabel))
 	}

@@ -22,9 +22,12 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
 
 	"github.com/awslabs/eks-node-viewer/pkg/pricing"
+
+	"github.com/aws/karpenter-core/pkg/apis/v1beta1"
 )
 
 type objectKey struct {
@@ -32,12 +35,13 @@ type objectKey struct {
 	name      string
 }
 type Node struct {
-	mu      sync.RWMutex
-	visible bool
-	node    v1.Node
-	pods    map[objectKey]*Pod
-	used    v1.ResourceList
-	Price   float64
+	mu                    sync.RWMutex
+	visible               bool
+	node                  v1.Node
+	pods                  map[objectKey]*Pod
+	used                  v1.ResourceList
+	Price                 float64
+	nodeclaimCreationTime time.Time
 }
 
 func NewNode(n *v1.Node) *Node {
@@ -47,6 +51,27 @@ func NewNode(n *v1.Node) *Node {
 		used: v1.ResourceList{},
 	}
 
+	return node
+}
+
+func NewNodeFromNodeClaim(nc *v1beta1.NodeClaim) *Node {
+	node := NewNode(&v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              nc.Status.NodeName,
+			CreationTimestamp: nc.CreationTimestamp,
+			Labels:            nc.Labels,
+			Annotations:       nc.Annotations,
+		},
+		Spec: v1.NodeSpec{
+			Taints:     nc.Spec.Taints,
+			ProviderID: nc.Status.ProviderID,
+		},
+		Status: v1.NodeStatus{
+			Capacity:    nc.Status.Capacity,
+			Allocatable: nc.Status.Allocatable,
+		},
+	})
+	node.nodeclaimCreationTime = nc.CreationTimestamp.Time
 	return node
 }
 
@@ -73,7 +98,16 @@ func (n *Node) Update(node *v1.Node) {
 func (n *Node) Name() string {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
+	if n.node.Name == "" {
+		return n.node.Spec.ProviderID
+	}
 	return n.node.Name
+}
+
+func (n *Node) ProviderID() string {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	return n.node.Spec.ProviderID
 }
 
 func (n *Node) BindPod(pod *Pod) {
@@ -134,19 +168,30 @@ func (n *Node) Cordoned() bool {
 }
 
 func (n *Node) Ready() bool {
+	ready := false
 	n.mu.RLock()
-	defer n.mu.RUnlock()
 	for _, c := range n.node.Status.Conditions {
 		if c.Status == v1.ConditionTrue && c.Type == v1.NodeReady {
-			return true
+			ready = true
+			break
 		}
 	}
-	return false
+	n.mu.RUnlock()
+	// when the node goes ready, remove the nodeclaim creation ts, if any
+	if ready {
+		n.mu.Lock()
+		n.nodeclaimCreationTime = time.Time{}
+		n.mu.Unlock()
+	}
+	return ready
 }
 
 func (n *Node) Created() time.Time {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
+	if !n.nodeclaimCreationTime.IsZero() {
+		return n.nodeclaimCreationTime
+	}
 	return n.node.CreationTimestamp.Time
 }
 
@@ -261,6 +306,10 @@ func (n *Node) NotReadyTime() time.Time {
 	}
 	n.mu.RUnlock()
 	if !notReadyTransitionTime.IsZero() {
+		// if there's a nodeclaim creation ts, use it if the node has never been Ready before
+		if !n.nodeclaimCreationTime.IsZero() {
+			return n.nodeclaimCreationTime
+		}
 		return notReadyTransitionTime
 	}
 	return n.Created()

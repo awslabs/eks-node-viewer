@@ -18,7 +18,6 @@ import (
 	"sync"
 
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Cluster struct {
@@ -38,28 +37,32 @@ func NewCluster() *Cluster {
 func (c *Cluster) AddNode(node *Node) *Node {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if existing, ok := c.nodes[node.Name()]; ok {
+	if existing, ok := c.nodes[node.ProviderID()]; ok {
 		existing.Update(&node.node)
 		return existing
 	}
 
-	c.nodes[node.Name()] = node
+	c.nodes[node.ProviderID()] = node
 	return node
 }
 
-func (c *Cluster) DeleteNode(name string) {
+func (c *Cluster) DeleteNode(providerID string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	delete(c.nodes, name)
+	n, ok := c.nodes[providerID]
+	if !ok {
+		return
+	}
 	var podsToDelete []objectKey
 	for k, p := range c.pods {
-		if p.NodeName() == name {
+		if p.NodeName() == n.node.Name {
 			podsToDelete = append(podsToDelete, k)
 		}
 	}
 	for _, k := range podsToDelete {
 		delete(c.pods, k)
 	}
+	delete(c.nodes, providerID)
 }
 
 func (c *Cluster) ForEachNode(f func(n *Node)) {
@@ -70,11 +73,22 @@ func (c *Cluster) ForEachNode(f func(n *Node)) {
 	}
 }
 
-func (c *Cluster) GetNode(name string) (*Node, bool) {
+func (c *Cluster) GetNode(providerID string) (*Node, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	n, ok := c.nodes[name]
+	n, ok := c.nodes[providerID]
 	return n, ok
+}
+
+func (c *Cluster) GetNodeByName(name string) (*Node, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	for _, n := range c.nodes {
+		if n.node.Name == name {
+			return n, true
+		}
+	}
+	return nil, false
 }
 
 func (c *Cluster) AddPod(pod *Pod) (totalPods int) {
@@ -86,12 +100,9 @@ func (c *Cluster) AddPod(pod *Pod) (totalPods int) {
 	if !pod.IsScheduled() {
 		return
 	}
-	n, ok := c.GetNode(pod.NodeName())
+	n, ok := c.GetNodeByName(pod.NodeName())
 	if !ok {
-		// node doesn't exist so we need to create it first to have somewhere to record the pod, it will be updated
-		// when we are notified about the node by the API Server
-		n = c.AddNode(NewNode(&v1.Node{ObjectMeta: metav1.ObjectMeta{Name: pod.NodeName()}}))
-		n.Hide()
+		return
 	}
 	n.BindPod(pod)
 	return
@@ -100,7 +111,7 @@ func (c *Cluster) AddPod(pod *Pod) (totalPods int) {
 func (c *Cluster) DeletePod(namespace, name string) (totalPods int) {
 	p, ok := c.GetPod(namespace, name)
 	if ok && p.IsScheduled() {
-		n, ok := c.GetNode(p.NodeName())
+		n, ok := c.GetNodeByName(p.NodeName())
 		if ok {
 			n.DeletePod(namespace, name)
 		}
