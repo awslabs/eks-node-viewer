@@ -308,7 +308,7 @@ func makeNodeSorter(nodeSort string) func(lhs *Node, rhs *Node) bool {
 			rhsLabel = rhs.ComputeLabel(nodeSort)
 		}
 		if lhsLabel == rhsLabel {
-			return sortOrder(natsort.Compare(lhs.ProviderID(), rhs.ProviderID()))
+			return sortOrder(natsort.Compare(lhs.InstanceID(), rhs.InstanceID()))
 		}
 		return sortOrder(natsort.Compare(lhsLabel, rhsLabel))
 	}
