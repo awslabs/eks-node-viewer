@@ -30,6 +30,10 @@ import (
 	"github.com/aws/karpenter-core/pkg/apis/v1beta1"
 )
 
+var (
+	instanceIDRegex = regexp.MustCompile(`aws:///(?P<AZ>.*)/(?P<InstanceID>.*)`)
+)
+
 type objectKey struct {
 	namespace string
 	name      string
@@ -99,7 +103,7 @@ func (n *Node) Name() string {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	if n.node.Name == "" {
-		return n.node.Spec.ProviderID
+		return n.InstanceID()
 	}
 	return n.node.Name
 }
@@ -108,6 +112,20 @@ func (n *Node) ProviderID() string {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	return n.node.Spec.ProviderID
+}
+
+func (n *Node) InstanceID() string {
+	providerID := n.ProviderID()
+	matches := instanceIDRegex.FindStringSubmatch(providerID)
+	if matches == nil {
+		return providerID
+	}
+	for i, name := range instanceIDRegex.SubexpNames() {
+		if name == "InstanceID" {
+			return matches[i]
+		}
+	}
+	return providerID
 }
 
 func (n *Node) BindPod(pod *Pod) {
