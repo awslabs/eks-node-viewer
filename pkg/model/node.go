@@ -182,7 +182,15 @@ func (n *Node) Used() v1.ResourceList {
 func (n *Node) Cordoned() bool {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
-	return n.node.Spec.Unschedulable
+	if n.node.Spec.Unschedulable {
+		return true
+	}
+	for _, taint := range n.node.Spec.Taints {
+		if taint.Key == "karpenter.sh/disruption" && taint.Effect == v1.TaintEffectNoSchedule {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *Node) Ready() bool {

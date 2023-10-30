@@ -189,7 +189,7 @@ func startMonitor(ctx context.Context, settings *monitorSettings) {
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				n := newObj.(*v1.Node)
-				if !n.DeletionTimestamp.IsZero() {
+				if !n.DeletionTimestamp.IsZero() && len(n.Finalizers) == 0 {
 					cluster.DeleteNode(n.Spec.ProviderID)
 				} else {
 					node, ok := cluster.GetNode(n.Spec.ProviderID)
