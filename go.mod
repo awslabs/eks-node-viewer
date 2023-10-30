@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/aws/aws-sdk-go v1.45.26
-	github.com/aws/karpenter-core v0.31.1-0.20231026063951-cc24f8196dfe
+	github.com/aws/karpenter-core v0.31.1
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.9.1
