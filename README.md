@@ -61,7 +61,7 @@ Usage of ./eks-node-viewer:
 # Standard usage
 eks-node-viewer
 # Karpenter nodes only
-eks-node-viewer --node-selector "karpenter.sh/provisioner-name"
+eks-node-viewer --node-selector karpenter.sh/nodepool
 # Display both CPU and Memory Usage
 eks-node-viewer --resources cpu,memory
 # Display extra labels, i.e. AZ
@@ -87,13 +87,13 @@ You can supply default options to `eks-node-viewer` by creating a file named `.e
 options there. The format is `option-name=value` where the option names are the command line flags:
 ```text
 # select only Karpenter managed nodes
-node-selector=karpenter.sh/provisioner-name
+node-selector=karpenter.sh/nodepool
 
 # display both CPU and memory
 resources=cpu,memory
 
 # show the zone and provisioner name by default
-extra-labels=topology.kubernetes.io/zone,karpenter.sh/provisioner-name
+extra-labels=topology.kubernetes.io/zone,karpenter.sh/nodepool
 
 # sort so that the newest nodes are first
 node-sort=creation=asc
