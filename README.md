@@ -92,7 +92,7 @@ node-selector=karpenter.sh/nodepool
 # display both CPU and memory
 resources=cpu,memory
 
-# show the zone and provisioner name by default
+# show the zone and nodepool name by default
 extra-labels=topology.kubernetes.io/zone,karpenter.sh/nodepool
 
 # sort so that the newest nodes are first
