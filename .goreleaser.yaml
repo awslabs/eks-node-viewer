@@ -10,13 +10,6 @@ before:
 builds:
   - binary: eks-node-viewer
     main: ./cmd/eks-node-viewer
-    goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - amd64
-      - arm64
     targets:
       - linux_amd64
       - linux_arm64

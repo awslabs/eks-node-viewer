@@ -12,7 +12,7 @@ build: generate ## Build
 	go build -ldflags="-s -w -X main.version=local -X main.builtBy=Makefile" ./cmd/eks-node-viewer
 
 goreleaser: ## Release snapshot
-	goreleaser build --snapshot --rm-dist
+	goreleaser build --snapshot --clean
 
 download: ## Download dependencies
 	go mod download
