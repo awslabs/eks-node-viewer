@@ -8,8 +8,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.45.26
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.45.26/LICENSE.txt)
+* Version: v1.48.4
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.48.4/LICENSE.txt)
 
 ```
 
@@ -220,8 +220,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.45.26
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.45.26/internal/sync/singleflight/LICENSE)
+* Version: v1.48.4
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.48.4/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -257,8 +257,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/aws/karpenter-core/pkg/apis/v1beta1
 
 * Name: github.com/aws/karpenter-core/pkg/apis/v1beta1
-* Version: v0.31.1-0.20231026063951-cc24f8196dfe
-* License: [Apache-2.0](https://github.com/aws/karpenter-core/blob/cc24f8196dfe/LICENSE)
+* Version: v0.32.2
+* License: [Apache-2.0](https://github.com/aws/karpenter-core/blob/v0.32.2/LICENSE)
 
 ```
                                  Apache License
@@ -3740,8 +3740,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/text
 
 * Name: golang.org/x/text
-* Version: v0.13.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.13.0:LICENSE)
+* Version: v0.14.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.14.0:LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -4160,8 +4160,8 @@ limitations under the License.
 ## k8s.io/api
 
 * Name: k8s.io/api
-* Version: v0.28.3
-* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.28.3/LICENSE)
+* Version: v0.28.4
+* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.28.4/LICENSE)
 
 ```
 
@@ -4372,8 +4372,8 @@ limitations under the License.
 ## k8s.io/apimachinery/pkg
 
 * Name: k8s.io/apimachinery/pkg
-* Version: v0.28.3
-* License: [Apache-2.0](https://github.com/kubernetes/apimachinery/blob/v0.28.3/LICENSE)
+* Version: v0.28.4
+* License: [Apache-2.0](https://github.com/kubernetes/apimachinery/blob/v0.28.4/LICENSE)
 
 ```
 
@@ -4584,8 +4584,8 @@ limitations under the License.
 ## k8s.io/apimachinery/third_party/forked/golang/reflect
 
 * Name: k8s.io/apimachinery/third_party/forked/golang/reflect
-* Version: v0.28.3
-* License: [BSD-3-Clause](https://github.com/kubernetes/apimachinery/blob/v0.28.3/third_party/forked/golang/LICENSE)
+* Version: v0.28.4
+* License: [BSD-3-Clause](https://github.com/kubernetes/apimachinery/blob/v0.28.4/third_party/forked/golang/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -4621,8 +4621,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/client-go
 
 * Name: k8s.io/client-go
-* Version: v0.28.3
-* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.28.3/LICENSE)
+* Version: v0.28.4
+* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.28.4/LICENSE)
 
 ```
 
