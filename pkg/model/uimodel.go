@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
+	"os/exec"
 	"sort"
 	"strings"
 	"time"
@@ -33,6 +35,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/duration"
 
 	"github.com/awslabs/eks-node-viewer/pkg/text"
+
+	clipboard "golang.design/x/clipboard"
 )
 
 var (
@@ -41,7 +45,12 @@ var (
 	activeDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"}).Render("•")
 	// black / white
 	inactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
+
+	selectedStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFFFF")).Bold(true).Render
+	deselectedStyle = lipgloss.NewStyle().Render
 )
+
+type editorFinishedMsg struct{ err error }
 
 type UIModel struct {
 	progress    progress.Model
@@ -51,6 +60,11 @@ type UIModel struct {
 	height      int
 	nodeSorter  func(lhs, rhs *Node) bool
 	style       *Style
+	cursor      int
+	selected    string
+	start       int
+	end         int
+	err         error
 }
 
 func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
@@ -66,6 +80,10 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
 		paginator:   pager,
 		nodeSorter:  makeNodeSorter(nodeSort),
 		style:       style,
+		cursor:      0,
+		selected:    "",
+		start:       0,
+		end:         0,
 	}
 }
 
@@ -111,20 +129,23 @@ func (u *UIModel) View() string {
 		// set the page to the last page
 		u.paginator.Page = u.paginator.TotalPages - 1
 	}
-	start, end := u.paginator.GetSliceBounds(stats.NumNodes)
-	if start >= 0 && end >= start {
-		for _, n := range stats.Nodes[start:end] {
-			u.writeNodeInfo(n, ctw, u.cluster.resources)
+	u.start, u.end = u.paginator.GetSliceBounds(stats.NumNodes)
+
+	if u.cursor > u.end-u.start {
+		u.cursor = u.end - u.start
+	}
+
+	if u.start >= 0 && u.end >= u.start {
+		for i, n := range stats.Nodes[u.start:u.end] {
+			u.writeNodeInfo(n, ctw, u.cluster.resources, i)
 		}
 	}
-	ctw.Flush()
 
-	fmt.Fprintln(&b, u.paginator.View())
-	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+	ctw.Flush()
 	return b.String()
 }
 
-func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName) {
+func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName, nodeIndex int) {
 	allocatable := n.Allocatable()
 	used := n.Used()
 	firstLine := true
@@ -147,7 +168,14 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			if !n.HasPrice() {
 				priceLabel = ""
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
+
+			style := deselectedStyle(n.Name())
+			if nodeIndex == u.cursor {
+				style = selectedStyle(n.Name())
+			}
+
+			fmt.Fprintf(w, style)
+			fmt.Fprintf(w, "\t%s\t%s\t(%d pods)\t%s%s", res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
 
 			// node compute type
 			if n.IsOnDemand() {
@@ -237,7 +265,7 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 // taking into account header and footer text
 func (u *UIModel) computeItemsPerPage(nodes []*Node, b *strings.Builder) int {
 	var buf bytes.Buffer
-	u.writeNodeInfo(nodes[0], &buf, u.cluster.resources)
+	u.writeNodeInfo(nodes[0], &buf, u.cluster.resources, 0)
 	headerLines := strings.Count(b.String(), "\n") + 2
 	nodeLines := strings.Count(buf.String(), "\n")
 	if nodeLines == 0 {
@@ -261,7 +289,28 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return u, tickCmd()
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "up":
+			if u.cursor > 0 {
+				u.cursor--
+			}
+		case "down":
+			if u.cursor < (u.end-u.start)-1 {
+				u.cursor++
+			}
 		case "q", "esc", "ctrl+c":
+			return u, tea.Quit
+		case "enter":
+			stats := u.cluster.Stats()
+			sort.Slice(stats.Nodes, func(a, b int) bool {
+				return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
+			})
+
+			u.selected = stats.Nodes[u.cursor].Name()
+			return u, openNode(u, msg)
+		}
+	case editorFinishedMsg:
+		if msg.err != nil {
+			u.err = msg.err
 			return u, tea.Quit
 		}
 	case tickMsg:
@@ -270,6 +319,29 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	u.paginator, cmd = u.paginator.Update(msg)
 	return u, cmd
+}
+
+func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
+	nodeExec := os.Getenv("NODE_EXEC")
+	if nodeExec == "" {
+		// copy only actions
+		err := clipboard.Init()
+		if err != nil {
+			panic(err)
+		}
+
+		clipboard.Write(clipboard.FmtText, []byte(u.selected))
+
+		var cmd tea.Cmd
+		_, cmd = u.paginator.Update(msg)
+		return cmd
+	}
+
+	nodeExec = fmt.Sprintf(nodeExec, u.selected)
+	c := exec.Command("/bin/sh", "-c", nodeExec)
+	return tea.ExecProcess(c, func(err error) tea.Msg {
+		return editorFinishedMsg{err}
+	})
 }
 
 func (u *UIModel) SetResources(resources []string) {
