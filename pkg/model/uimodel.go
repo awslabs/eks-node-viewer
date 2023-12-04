@@ -50,7 +50,7 @@ var (
 	deselectedStyle = lipgloss.NewStyle().Render
 )
 
-type editorFinishedMsg struct{ err error }
+type execFinishedMsg struct{ err error }
 
 type UIModel struct {
 	progress       progress.Model
@@ -339,7 +339,7 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return u, openNode(u, msg)
 		}
-	case editorFinishedMsg:
+	case execFinishedMsg:
 		if msg.err != nil {
 			u.err = msg.err
 			return u, tea.Quit
@@ -371,7 +371,7 @@ func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
 	nodeExecCmd := fmt.Sprintf(u.nodeExec, nodeName)
 	c := exec.Command("/bin/sh", "-c", nodeExecCmd)
 	return tea.ExecProcess(c, func(err error) tea.Msg {
-		return editorFinishedMsg{err}
+		return execFinishedMsg{err}
 	})
 }
 
