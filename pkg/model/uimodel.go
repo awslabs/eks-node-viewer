@@ -53,37 +53,39 @@ var (
 type editorFinishedMsg struct{ err error }
 
 type UIModel struct {
-	progress    progress.Model
-	cluster     *Cluster
-	extraLabels []string
-	paginator   paginator.Model
-	height      int
-	nodeSorter  func(lhs, rhs *Node) bool
-	style       *Style
-	cursor      int
-	selected    string
-	start       int
-	end         int
-	err         error
+	progress       progress.Model
+	cluster        *Cluster
+	extraLabels    []string
+	paginator      paginator.Model
+	height         int
+	nodeSorter     func(lhs, rhs *Node) bool
+	style          *Style
+	cursor         int
+	selected       string
+	start          int
+	end            int
+	err            error
+	copyInstanceID bool
 }
 
-func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
+func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanceID bool) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
 	pager.InactiveDot = inactiveDot
 	return &UIModel{
 		// red to green
-		progress:    progress.New(style.gradient),
-		cluster:     NewCluster(),
-		extraLabels: extraLabels,
-		paginator:   pager,
-		nodeSorter:  makeNodeSorter(nodeSort),
-		style:       style,
-		cursor:      0,
-		selected:    "",
-		start:       0,
-		end:         0,
+		progress:       progress.New(style.gradient),
+		cluster:        NewCluster(),
+		extraLabels:    extraLabels,
+		paginator:      pager,
+		nodeSorter:     makeNodeSorter(nodeSort),
+		style:          style,
+		cursor:         0,
+		selected:       "",
+		start:          0,
+		end:            0,
+		copyInstanceID: copyInstanceID,
 	}
 }
 
@@ -308,7 +310,12 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
 			})
 
-			u.selected = stats.Nodes[u.start:u.end][u.cursor].Name()
+			if u.copyInstanceID {
+				u.selected = stats.Nodes[u.start:u.end][u.cursor].InstanceID()
+			} else {
+				u.selected = stats.Nodes[u.start:u.end][u.cursor].Name()
+			}
+
 			return u, openNode(u, msg)
 		}
 	case editorFinishedMsg:

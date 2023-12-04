@@ -49,6 +49,7 @@ type Flags struct {
 	Kubeconfig      string
 	Resources       string
 	DisablePricing  bool
+	CopyInstanceID  bool
 	ShowAttribution bool
 	Version         bool
 }
@@ -89,6 +90,9 @@ func ParseFlags() (Flags, error) {
 
 	disablePricingDefault := cfg.getBoolValue("disable-pricing", false)
 	flagSet.BoolVar(&flags.DisablePricing, "disable-pricing", disablePricingDefault, "Disable pricing lookups")
+
+	copyInstanceIDDefault := cfg.getBoolValue("copy-instance-id", false)
+	flagSet.BoolVar(&flags.CopyInstanceID, "copy-instance-id", copyInstanceIDDefault, "Copy the instance ID of the node to the clipboard")
 
 	flagSet.BoolVar(&flags.ShowAttribution, "attribution", false, "Show the Open Source Attribution")
 
