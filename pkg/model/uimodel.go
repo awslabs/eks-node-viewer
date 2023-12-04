@@ -66,6 +66,7 @@ type UIModel struct {
 	end            int
 	err            error
 	copyInstanceID bool
+	nodeExec       string
 }
 
 func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanceID bool) *UIModel {
@@ -73,6 +74,8 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanc
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
 	pager.InactiveDot = inactiveDot
+
+	nodeExec := os.Getenv("NODE_EXEC")
 	return &UIModel{
 		// red to green
 		progress:       progress.New(style.gradient),
@@ -86,6 +89,7 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanc
 		start:          0,
 		end:            0,
 		copyInstanceID: copyInstanceID,
+		nodeExec:       nodeExec,
 	}
 }
 
@@ -119,7 +123,16 @@ func (u *UIModel) View() string {
 		fmt.Fprintln(&b)
 		fmt.Fprintln(&b, "Waiting for update or no nodes found...")
 		fmt.Fprintln(&b, u.paginator.View())
-		fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+
+		helpMessage := "←/→ page • q: quit • enter: copy node name"
+		if u.copyInstanceID {
+			helpMessage = "←/→ page • q: quit • enter: copy instance id"
+		}
+		if u.nodeExec != "" {
+			helpMessage = (helpMessage + " (run NODE_EXEC cmd)")
+		}
+		fmt.Fprintln(&b, helpStyle(helpMessage))
+
 		return b.String()
 	}
 
@@ -145,7 +158,15 @@ func (u *UIModel) View() string {
 	ctw.Flush()
 
 	fmt.Fprintln(&b, u.paginator.View())
-	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+
+	helpMessage := "←/→ page • q: quit • enter: copy node name"
+	if u.copyInstanceID {
+		helpMessage = "←/→ page • q: quit • enter: copy instance id"
+	}
+	if u.nodeExec != "" {
+		helpMessage = (helpMessage + " (run NODE_EXEC cmd)")
+	}
+	fmt.Fprintln(&b, helpStyle(helpMessage))
 
 	return b.String()
 }
@@ -333,8 +354,7 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
 	nodeName := u.selected
-	nodeExec := os.Getenv("NODE_EXEC")
-	if nodeExec == "" || nodeName == "" || strings.HasPrefix(nodeName, "fargate") {
+	if u.nodeExec == "" || nodeName == "" || strings.HasPrefix(nodeName, "fargate") {
 		// copy only actions
 		err := clipboard.Init()
 		if err != nil {
@@ -348,8 +368,8 @@ func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
 		return cmd
 	}
 
-	nodeExec = fmt.Sprintf(nodeExec, nodeName)
-	c := exec.Command("/bin/sh", "-c", nodeExec)
+	nodeExecCmd := fmt.Sprintf(u.nodeExec, nodeName)
+	c := exec.Command("/bin/sh", "-c", nodeExecCmd)
 	return tea.ExecProcess(c, func(err error) tea.Msg {
 		return editorFinishedMsg{err}
 	})
