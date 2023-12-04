@@ -146,7 +146,8 @@ func (u *UIModel) View() string {
 	}
 	u.start, u.end = u.paginator.GetSliceBounds(stats.NumNodes)
 
-	if u.cursor > u.end-u.start {
+	// if the current index of the cursor is greater than the number of nodes on the next page, perform correction
+	if u.cursor >= u.end-u.start {
 		u.cursor = (u.end - u.start) - 1
 	}
 
