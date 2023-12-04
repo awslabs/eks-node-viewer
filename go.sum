@@ -4,8 +4,8 @@ github.com/avast/retry-go v3.0.0+incompatible h1:4SOWQ7Qs+oroOTQOYnAHqelpCO0biHS
 github.com/avast/retry-go v3.0.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
 github.com/aws/aws-sdk-go v1.48.4 h1:HS2L7ynVhkcRrQRro9CLJZ/xLRb4UOzDEfPzgevZwXM=
 github.com/aws/aws-sdk-go v1.48.4/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
-github.com/aws/karpenter-core v0.32.2 h1:jUKhC2qrk+/ZO9okx4iIE9Ju6f0gFG90eSPppJtqbDk=
-github.com/aws/karpenter-core v0.32.2/go.mod h1:RNih2g6qCiah8rFaZ7HkmClIK66Hjj38z3DbWnWGM2w=
+github.com/aws/karpenter-core v0.32.3 h1:BS5jCl0OV31Lm+QMCaCWMk+utdZN17doV6xlhu2dlug=
+github.com/aws/karpenter-core v0.32.3/go.mod h1:RNih2g6qCiah8rFaZ7HkmClIK66Hjj38z3DbWnWGM2w=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
