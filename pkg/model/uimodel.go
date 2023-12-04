@@ -140,8 +140,11 @@ func (u *UIModel) View() string {
 			u.writeNodeInfo(n, ctw, u.cluster.resources, i)
 		}
 	}
-
 	ctw.Flush()
+
+	fmt.Fprintln(&b, u.paginator.View())
+	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+
 	return b.String()
 }
 
