@@ -132,7 +132,7 @@ func (u *UIModel) View() string {
 	u.start, u.end = u.paginator.GetSliceBounds(stats.NumNodes)
 
 	if u.cursor > u.end-u.start {
-		u.cursor = u.end - u.start
+		u.cursor = (u.end - u.start) - 1
 	}
 
 	if u.start >= 0 && u.end >= u.start {
@@ -308,7 +308,7 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
 			})
 
-			u.selected = stats.Nodes[u.cursor].Name()
+			u.selected = stats.Nodes[u.start:u.end][u.cursor].Name()
 			return u, openNode(u, msg)
 		}
 	case editorFinishedMsg:
