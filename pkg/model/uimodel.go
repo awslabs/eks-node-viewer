@@ -322,22 +322,23 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
+	nodeName := u.selected
 	nodeExec := os.Getenv("NODE_EXEC")
-	if nodeExec == "" {
+	if nodeExec == "" || nodeName == "" || strings.HasPrefix(nodeName, "fargate") {
 		// copy only actions
 		err := clipboard.Init()
 		if err != nil {
 			panic(err)
 		}
 
-		clipboard.Write(clipboard.FmtText, []byte(u.selected))
+		clipboard.Write(clipboard.FmtText, []byte(nodeName))
 
 		var cmd tea.Cmd
 		_, cmd = u.paginator.Update(msg)
 		return cmd
 	}
 
-	nodeExec = fmt.Sprintf(nodeExec, u.selected)
+	nodeExec = fmt.Sprintf(nodeExec, nodeName)
 	c := exec.Command("/bin/sh", "-c", nodeExec)
 	return tea.ExecProcess(c, func(err error) tea.Msg {
 		return editorFinishedMsg{err}
