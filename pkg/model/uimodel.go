@@ -60,13 +60,34 @@ type UIModel struct {
 	height         int
 	nodeSorter     func(lhs, rhs *Node) bool
 	style          *Style
-	cursor         int
-	selected       string
+	current        int
 	start          int
 	end            int
 	err            error
 	copyInstanceID bool
 	nodeExec       string
+}
+
+func (u *UIModel) Stats() Stats {
+	stats := u.cluster.Stats()
+	sort.Slice(stats.Nodes, func(a, b int) bool {
+		return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
+	})
+
+	return stats
+}
+
+func (u *UIModel) SelectedNode() *Node {
+	return u.Stats().Nodes[u.start:u.end][u.current]
+}
+
+func (u *UIModel) SelectedNodeName() string {
+	nodeName := u.SelectedNode().Name()
+	if u.copyInstanceID {
+		nodeName = u.SelectedNode().InstanceID()
+	}
+
+	return nodeName
 }
 
 func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanceID bool) *UIModel {
@@ -84,8 +105,7 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanc
 		paginator:      pager,
 		nodeSorter:     makeNodeSorter(nodeSort),
 		style:          style,
-		cursor:         0,
-		selected:       "",
+		current:        0,
 		start:          0,
 		end:            0,
 		copyInstanceID: copyInstanceID,
@@ -104,11 +124,7 @@ func (u *UIModel) Init() tea.Cmd {
 func (u *UIModel) View() string {
 	b := strings.Builder{}
 
-	stats := u.cluster.Stats()
-
-	sort.Slice(stats.Nodes, func(a, b int) bool {
-		return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
-	})
+	stats := u.Stats()
 
 	ctw := text.NewColorTabWriter(&b, 0, 8, 1)
 	u.writeClusterSummary(u.cluster.resources, stats, ctw)
@@ -146,9 +162,9 @@ func (u *UIModel) View() string {
 	}
 	u.start, u.end = u.paginator.GetSliceBounds(stats.NumNodes)
 
-	// if the current index of the cursor is greater than the number of nodes on the next page, perform correction
-	if u.cursor >= u.end-u.start {
-		u.cursor = (u.end - u.start) - 1
+	// if the current index of the current is greater than the number of nodes on the next page, perform correction
+	if u.current >= u.end-u.start {
+		u.current = (u.end - u.start) - 1
 	}
 
 	if u.start >= 0 && u.end >= u.start {
@@ -197,7 +213,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			}
 
 			style := deselectedStyle(n.Name())
-			if nodeIndex == u.cursor {
+			if nodeIndex == u.current {
 				style = selectedStyle(n.Name())
 			}
 
@@ -317,27 +333,16 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up":
-			if u.cursor > 0 {
-				u.cursor--
+			if u.current > 0 {
+				u.current--
 			}
 		case "down":
-			if u.cursor < (u.end-u.start)-1 {
-				u.cursor++
+			if u.current < (u.end-u.start)-1 {
+				u.current++
 			}
 		case "q", "esc", "ctrl+c":
 			return u, tea.Quit
 		case "enter":
-			stats := u.cluster.Stats()
-			sort.Slice(stats.Nodes, func(a, b int) bool {
-				return u.nodeSorter(stats.Nodes[a], stats.Nodes[b])
-			})
-
-			if u.copyInstanceID {
-				u.selected = stats.Nodes[u.start:u.end][u.cursor].InstanceID()
-			} else {
-				u.selected = stats.Nodes[u.start:u.end][u.cursor].Name()
-			}
-
 			return u, openNode(u, msg)
 		}
 	case execFinishedMsg:
@@ -354,8 +359,8 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
-	nodeName := u.selected
-	if u.nodeExec == "" || nodeName == "" || strings.HasPrefix(nodeName, "fargate") {
+	nodeName := u.SelectedNodeName()
+	if u.nodeExec == "" || nodeName == "" || u.SelectedNode().IsFargate() {
 		// copy only actions
 		err := clipboard.Init()
 		if err != nil {
