@@ -42,15 +42,12 @@ import (
 )
 
 var (
-	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
 	// white / black
 	activeDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"}).Render("•")
 	// black / white
 	inactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
-
 	// selected (current) node
 	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFFFF")).Bold(true).Render
-
 	// default (deselected) node
 	deselectedStyle = lipgloss.NewStyle().Render
 )
