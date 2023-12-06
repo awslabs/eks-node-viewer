@@ -17,7 +17,6 @@ package model
 import (
 	"bytes"
 	"fmt"
-	"github.com/charmbracelet/bubbles/key"
 	"io"
 	"os"
 	"os/exec"
@@ -26,6 +25,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -53,8 +53,6 @@ var (
 
 	// default (deselected) node
 	deselectedStyle = lipgloss.NewStyle().Render
-
-	blinkHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Blink(true).Render
 )
 
 type execFinishedMsg struct{ err error }
@@ -428,17 +426,6 @@ func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
 		}
 
 		clipboard.Write(clipboard.FmtText, []byte(nodeName))
-
-		b := strings.Builder{}
-		ctw := text.NewColorTabWriter(&b, 0, 20, 1)
-		enPrinter := message.NewPrinter(language.English)
-		enPrinter.Fprintf(ctw, blinkHelpStyle("***** copied"))
-		ctw.Flush()
-
-		//go func() {
-		//	time.Sleep(time.Second * 2)
-		//
-		//}()
 
 		var cmd tea.Cmd
 		_, cmd = u.paginator.Update(msg)
