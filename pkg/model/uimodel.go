@@ -335,10 +335,22 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up":
 			if u.current > 0 {
 				u.current--
+			} else {
+				if u.current == 0 && u.paginator.Page > 0 {
+					u.paginator.PrevPage()
+					u.start, u.end = u.paginator.GetSliceBounds(u.Stats().NumNodes)
+					u.current = (u.end - u.start) - 1
+				}
 			}
 		case "down":
 			if u.current < (u.end-u.start)-1 {
 				u.current++
+			} else {
+				if u.current == (u.end-u.start)-1 && u.paginator.Page != u.paginator.TotalPages-1 {
+					u.paginator.NextPage()
+					u.start, u.end = u.paginator.GetSliceBounds(u.Stats().NumNodes)
+					u.current = 0
+				}
 			}
 		case "q", "esc", "ctrl+c":
 			return u, tea.Quit
