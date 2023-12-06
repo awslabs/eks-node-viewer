@@ -17,6 +17,7 @@ package model
 import (
 	"bytes"
 	"fmt"
+	"github.com/charmbracelet/bubbles/key"
 	"io"
 	"os"
 	"os/exec"
@@ -24,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -46,17 +48,65 @@ var (
 	// black / white
 	inactiveDot = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "250", Dark: "238"}).Render("•")
 
-	selectedStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFFFF")).Bold(true).Render
+	// selected (current) node
+	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFFFF")).Bold(true).Render
+
+	// default (deselected) node
 	deselectedStyle = lipgloss.NewStyle().Render
+
+	blinkHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Blink(true).Render
 )
 
 type execFinishedMsg struct{ err error }
+
+type KeyMap struct {
+	Move  key.Binding
+	Page  key.Binding
+	Quit  key.Binding
+	Enter key.Binding
+}
+
+var keys = KeyMap{
+	Move: key.NewBinding(
+		key.WithKeys("up", "down"),
+		key.WithHelp("↑/↓", "move"),
+	),
+	Page: key.NewBinding(
+		key.WithKeys("left", "right"),
+		key.WithHelp("←/→", "page"),
+	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "copy node name"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q"),
+		key.WithHelp("q", "quit"),
+	),
+}
+
+// ShortHelp returns keybindings to be shown in the mini help view. It's part
+// of the key.Map interface.
+func (k KeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Move, k.Page, k.Enter, k.Quit}
+}
+
+// FullHelp returns keybindings for the expanded help view. It's part of the
+// key.Map interface.
+func (k KeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Move, k.Page, k.Enter, k.Quit}, // first column
+		{},                                // second column
+	}
+}
 
 type UIModel struct {
 	progress       progress.Model
 	cluster        *Cluster
 	extraLabels    []string
 	paginator      paginator.Model
+	help           help.Model
+	keys           KeyMap
 	height         int
 	nodeSorter     func(lhs, rhs *Node) bool
 	style          *Style
@@ -90,6 +140,19 @@ func (u *UIModel) SelectedNodeName() string {
 	return nodeName
 }
 
+func (u *UIModel) Keys() KeyMap {
+	enterDesc := "copy node name"
+	if u.copyInstanceID {
+		enterDesc = "copy instance id"
+		if u.nodeExec != "" {
+			enterDesc += " (run NODE_EXEC cmd)"
+		}
+		u.keys.Enter.SetHelp("enter", enterDesc)
+	}
+
+	return u.keys
+}
+
 func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanceID bool) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
@@ -103,6 +166,8 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style, copyInstanc
 		cluster:        NewCluster(),
 		extraLabels:    extraLabels,
 		paginator:      pager,
+		help:           help.New(),
+		keys:           keys,
 		nodeSorter:     makeNodeSorter(nodeSort),
 		style:          style,
 		current:        0,
@@ -140,16 +205,7 @@ func (u *UIModel) View() string {
 		fmt.Fprintln(&b, "Waiting for update or no nodes found...")
 		fmt.Fprintln(&b, u.paginator.View())
 
-		helpMessage := "←/→ page • q: quit • enter: copy node name"
-		if u.copyInstanceID {
-			helpMessage = "←/→ page • q: quit • enter: copy instance id"
-		}
-		if u.nodeExec != "" {
-			helpMessage = (helpMessage + " (run NODE_EXEC cmd)")
-		}
-		fmt.Fprintln(&b, helpStyle(helpMessage))
-
-		return b.String()
+		return b.String() + u.help.View(u.Keys())
 	}
 
 	fmt.Fprintln(&b)
@@ -176,16 +232,7 @@ func (u *UIModel) View() string {
 
 	fmt.Fprintln(&b, u.paginator.View())
 
-	helpMessage := "←/→ page • q: quit • enter: copy node name"
-	if u.copyInstanceID {
-		helpMessage = "←/→ page • q: quit • enter: copy instance id"
-	}
-	if u.nodeExec != "" {
-		helpMessage = (helpMessage + " (run NODE_EXEC cmd)")
-	}
-	fmt.Fprintln(&b, helpStyle(helpMessage))
-
-	return b.String()
+	return b.String() + u.help.View(u.Keys())
 }
 
 func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName, nodeIndex int) {
@@ -329,6 +376,7 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		u.height = msg.Height
+		u.help.Width = msg.Width
 		return u, tickCmd()
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -380,6 +428,17 @@ func openNode(u *UIModel, msg tea.Msg) tea.Cmd {
 		}
 
 		clipboard.Write(clipboard.FmtText, []byte(nodeName))
+
+		b := strings.Builder{}
+		ctw := text.NewColorTabWriter(&b, 0, 20, 1)
+		enPrinter := message.NewPrinter(language.English)
+		enPrinter.Fprintf(ctw, blinkHelpStyle("***** copied"))
+		ctw.Flush()
+
+		//go func() {
+		//	time.Sleep(time.Second * 2)
+		//
+		//}()
 
 		var cmd tea.Cmd
 		_, cmd = u.paginator.Update(msg)
