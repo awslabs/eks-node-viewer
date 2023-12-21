@@ -288,7 +288,7 @@ func (n *Node) HasPrice() bool {
 func (n *Node) UpdatePrice(pricing *pricing.Provider) {
 	// If the node has the instance-price override label, don't look up pricing
 	// and use the value here.
-	if val, ok := n.node.Labels["instance-price"]; ok {
+	if val, ok := n.node.Labels["eks-node-viewer/instance-price"]; ok {
 		if price, err := strconv.ParseFloat(val, 64); err == nil {
 			n.Price = price
 			return
