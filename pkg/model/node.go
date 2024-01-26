@@ -28,7 +28,7 @@ import (
 
 	"github.com/awslabs/eks-node-viewer/pkg/pricing"
 
-	"github.com/aws/karpenter-core/pkg/apis/v1beta1"
+	"sigs.k8s.io/karpenter/pkg/apis/v1beta1"
 )
 
 var (
