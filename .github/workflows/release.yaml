@@ -18,9 +18,10 @@ jobs:
         fetch-depth: 0 # disable shallow clone - get all
 
     - name: Set up Go 1.x
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
-        go-version: stable
+        go-version-file: 'go.mod'
+        check-latest: true
       id: go
 
     - name: Fetch build tag
