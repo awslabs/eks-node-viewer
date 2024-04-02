@@ -1,9 +1,10 @@
-.PHONY: help clean verify boilerplate licenses download coverage generate
+.PHONY: help clean verify boilerplate licenses download coverage generate test
 
 NO_COLOR=\033[0m
 GREEN=\033[32;01m
 YELLOW=\033[33;01m
 RED=\033[31;01m
+TEST_PKGS=./pkg/... ./cmd/...
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-20s\033[0m %s\n", $$1, $$2}'
@@ -30,7 +31,7 @@ verify: boilerplate licenses download ## Format and Lint
 	golangci-lint run
 
 coverage: ## Run tests w/ coverage
-	go test -coverprofile=coverage.out ./...
+	go test -coverprofile=coverage.out $(TEST_PKGS)
 	go tool cover -html=coverage.out
 
 generate: ## Generate attribution
@@ -39,7 +40,16 @@ generate: ## Generate attribution
 	go generate ./...
 	./hack/gen_licenses.sh
 	go generate ./...
+	curl https://raw.githubusercontent.com/aws/karpenter-provider-aws/main/pkg/providers/pricing/zz_generated.pricing_aws.go > ./pkg/aws/zz_generated_aws.pricing.go
+	curl https://raw.githubusercontent.com/aws/karpenter-provider-aws/main/pkg/providers/pricing/zz_generated.pricing_aws_cn.go > ./pkg/aws/zz_generated_aws_cn.pricing.go
+	curl https://raw.githubusercontent.com/aws/karpenter-provider-aws/main/pkg/providers/pricing/zz_generated.pricing_aws_us_gov.go > ./pkg/aws/zz_generated_aws_us_gov.pricing.go
+	sed -i'.bkup' 's/package pricing/package aws/' pkg/aws/zz_generated*
+	rm -f pkg/aws/*.bkup
 
 clean: ## Clean artifacts
 	rm -rf eks-node-viewer
 	rm -rf dist/
+
+test:
+	go test -v $(TEST_PKGS)
+

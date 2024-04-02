@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/karpenter/pkg/apis/v1beta1"
 )
 
-func Create(kubeconfig, context string) (*kubernetes.Clientset, error) {
+func NewKubernetes(kubeconfig, context string) (*kubernetes.Clientset, error) {
 	config, err := getConfig(kubeconfig, context)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func Create(kubeconfig, context string) (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-func NodeClaims(kubeconfig, context string) (*rest.RESTClient, error) {
+func NewNodeClaims(kubeconfig, context string) (*rest.RESTClient, error) {
 	c, err := getConfig(kubeconfig, context)
 	if err != nil {
 		return nil, err
