@@ -16,18 +16,13 @@ package model
 
 import (
 	"fmt"
-	"math"
 	"regexp"
-	"strconv"
 	"sync"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
-
-	"github.com/awslabs/eks-node-viewer/pkg/pricing"
-
 	"sigs.k8s.io/karpenter/pkg/apis/v1beta1"
 )
 
@@ -92,6 +87,10 @@ func (n *Node) IsSpot() bool {
 
 func (n *Node) IsFargate() bool {
 	return n.node.Labels["eks.amazonaws.com/compute-type"] == "fargate"
+}
+
+func (n *Node) Labels() map[string]string {
+	return n.node.Labels
 }
 
 func (n *Node) Update(node *v1.Node) {
@@ -285,35 +284,6 @@ func (n *Node) HasPrice() bool {
 	return n.Price == n.Price
 }
 
-func (n *Node) UpdatePrice(pricing *pricing.Provider) {
-	// If the node has the instance-price override label, don't look up pricing
-	// and use the value here.
-	if val, ok := n.node.Labels["eks-node-viewer/instance-price"]; ok {
-		if price, err := strconv.ParseFloat(val, 64); err == nil {
-			n.Price = price
-			return
-		}
-	}
-	// lookup our n price
-	n.Price = math.NaN()
-	if n.IsOnDemand() {
-		if price, ok := pricing.OnDemandPrice(n.InstanceType()); ok {
-			n.Price = price
-		}
-	} else if n.IsSpot() {
-		if price, ok := pricing.SpotPrice(n.InstanceType(), n.Zone()); ok {
-			n.Price = price
-		}
-	} else if n.IsFargate() && len(n.Pods()) == 1 {
-		cpu, mem, ok := n.Pods()[0].FargateCapacityProvisioned()
-		if ok {
-			if price, ok := pricing.FargatePrice(cpu, mem); ok {
-				n.Price = price
-			}
-		}
-	}
-}
-
 var resourceLabelRe = regexp.MustCompile("eks-node-viewer/node-(.*?)-usage")
 
 // ComputeLabel computes dynamic labels
@@ -348,6 +318,10 @@ func (n *Node) NotReadyTime() time.Time {
 		return notReadyTransitionTime
 	}
 	return n.Created()
+}
+
+func (n *Node) SetPrice(price float64) {
+	n.Price = price
 }
 
 func pctUsage(allocatable v1.ResourceList, used v1.ResourceList, resource string) string {

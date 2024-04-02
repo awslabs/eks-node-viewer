@@ -27,4 +27,4 @@ jobs:
       run: make build
 
     - name: Test
-      run: go test -v ./pkg/... ./cmd/...
+      run: make test
