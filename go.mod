@@ -15,7 +15,7 @@ require (
 	k8s.io/api v0.29.3
 	k8s.io/apimachinery v0.29.3
 	k8s.io/client-go v0.29.3
-	sigs.k8s.io/karpenter v0.35.2
+	sigs.k8s.io/karpenter v0.35.4
 )
 
 require (
