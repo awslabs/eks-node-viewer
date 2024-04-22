@@ -1,8 +1,7 @@
 module github.com/awslabs/eks-node-viewer
 
 go 1.21
-
-toolchain go1.21.0
+toolchain go1.22.2
 
 require (
 	github.com/aws/aws-sdk-go v1.51.26
@@ -13,7 +12,7 @@ require (
 	go.uber.org/multierr v1.11.0
 	golang.org/x/text v0.14.0
 	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
+	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v0.29.3
 	sigs.k8s.io/karpenter v0.35.4
 )
@@ -68,7 +67,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	knative.dev/pkg v0.0.0-20230712131115-7051d301e7f4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
