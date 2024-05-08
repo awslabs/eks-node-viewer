@@ -89,7 +89,7 @@ func (m Controller) startNodeClaimWatch(ctx context.Context, cluster *model.Clus
 				n.Show()
 			},
 			DeleteFunc: func(obj interface{}) {
-				cluster.DeleteNode(obj.(*v1beta1.NodeClaim).Status.ProviderID)
+				cluster.DeleteNode(ignoreDeletedFinalStateUnknown(obj).(*v1beta1.NodeClaim).Status.ProviderID)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				nc := newObj.(*v1beta1.NodeClaim)
@@ -126,7 +126,7 @@ func (m Controller) startNodeWatch(ctx context.Context, cluster *model.Cluster) 
 				n.Show()
 			},
 			DeleteFunc: func(obj interface{}) {
-				cluster.DeleteNode(obj.(*v1.Node).Spec.ProviderID)
+				cluster.DeleteNode(ignoreDeletedFinalStateUnknown(obj).(*v1.Node).Spec.ProviderID)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
 				n := newObj.(*v1.Node)
@@ -169,7 +169,7 @@ func (m Controller) startPodWatch(ctx context.Context, cluster *model.Cluster) {
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
-				p := obj.(*v1.Pod)
+				p := ignoreDeletedFinalStateUnknown(obj).(*v1.Pod)
 				cluster.DeletePod(p.Namespace, p.Name)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
@@ -224,4 +224,14 @@ func isTerminalPod(p *v1.Pod) bool {
 		return true
 	}
 	return false
+}
+
+// ignoreDeletedFinalStateUnknown returns the object wrapped in
+// DeletedFinalStateUnknown. Useful in OnDelete resource event handlers that do
+// not need the additional context.
+func ignoreDeletedFinalStateUnknown(obj interface{}) interface{} {
+	if obj, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+		return obj.Obj
+	}
+	return obj
 }
