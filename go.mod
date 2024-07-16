@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.12.1
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	go.uber.org/multierr v1.11.0
-	golang.org/x/text v0.15.0
+	golang.org/x/text v0.16.0
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
 	k8s.io/client-go v0.30.2
