@@ -17,13 +17,15 @@ package client
 import (
 	"strings"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth" // pull auth
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"sigs.k8s.io/karpenter/pkg/apis/v1beta1"
+	karpv1apis "sigs.k8s.io/karpenter/pkg/apis"
+	karpv1 "sigs.k8s.io/karpenter/pkg/apis/v1"
 )
 
 func NewKubernetes(kubeconfig, context string) (*kubernetes.Clientset, error) {
@@ -43,11 +45,14 @@ func NewNodeClaims(kubeconfig, context string) (*rest.RESTClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := v1beta1.SchemeBuilder.AddToScheme(scheme.Scheme); err != nil {
-		return nil, err
-	}
+
+	gv := schema.GroupVersion{Group: karpv1apis.Group, Version: "v1"}
+	scheme.Scheme.AddKnownTypes(gv,
+		&karpv1.NodeClaim{},
+		&karpv1.NodeClaimList{})
+
 	config := *c
-	config.ContentConfig.GroupVersion = &v1beta1.SchemeGroupVersion
+	config.ContentConfig.GroupVersion = &gv
 	config.APIPath = "/apis"
 	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.UserAgent = rest.DefaultKubernetesUserAgent()

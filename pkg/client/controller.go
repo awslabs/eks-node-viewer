@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"sigs.k8s.io/karpenter/pkg/apis/v1beta1"
+	karpv1 "sigs.k8s.io/karpenter/pkg/apis/v1"
 
 	"github.com/awslabs/eks-node-viewer/pkg/model"
 	"github.com/awslabs/eks-node-viewer/pkg/pricing"
@@ -72,11 +72,11 @@ func (m Controller) startNodeClaimWatch(ctx context.Context, cluster *model.Clus
 		})
 	_, nodeClaimController := cache.NewInformer(
 		nodeClaimWatchList,
-		&v1beta1.NodeClaim{},
+		&karpv1.NodeClaim{},
 		time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				nc := obj.(*v1beta1.NodeClaim)
+				nc := obj.(*karpv1.NodeClaim)
 				if nc.Status.ProviderID == "" {
 					return
 				}
@@ -89,10 +89,10 @@ func (m Controller) startNodeClaimWatch(ctx context.Context, cluster *model.Clus
 				n.Show()
 			},
 			DeleteFunc: func(obj interface{}) {
-				cluster.DeleteNode(ignoreDeletedFinalStateUnknown(obj).(*v1beta1.NodeClaim).Status.ProviderID)
+				cluster.DeleteNode(ignoreDeletedFinalStateUnknown(obj).(*karpv1.NodeClaim).Status.ProviderID)
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				nc := newObj.(*v1beta1.NodeClaim)
+				nc := newObj.(*karpv1.NodeClaim)
 				if nc.Status.ProviderID == "" {
 					return
 				}
