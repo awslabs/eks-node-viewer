@@ -23,7 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
-	"sigs.k8s.io/karpenter/pkg/apis/v1beta1"
+	karpv1 "sigs.k8s.io/karpenter/pkg/apis/v1"
 )
 
 var (
@@ -54,7 +54,7 @@ func NewNode(n *v1.Node) *Node {
 	return node
 }
 
-func NewNodeFromNodeClaim(nc *v1beta1.NodeClaim) *Node {
+func NewNodeFromNodeClaim(nc *karpv1.NodeClaim) *Node {
 	node := NewNode(&v1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              nc.Status.NodeName,
