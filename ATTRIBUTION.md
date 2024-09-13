@@ -8,8 +8,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
-* Version: v1.54.19
-* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.54.19/LICENSE.txt)
+* Version: v1.55.5
+* License: [Apache-2.0](https://github.com/aws/aws-sdk-go/blob/v1.55.5/LICENSE.txt)
 
 ```
 
@@ -220,8 +220,8 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 ## github.com/aws/aws-sdk-go/internal/sync/singleflight
 
 * Name: github.com/aws/aws-sdk-go/internal/sync/singleflight
-* Version: v1.54.19
-* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.54.19/internal/sync/singleflight/LICENSE)
+* Version: v1.55.5
+* License: [BSD-3-Clause](https://github.com/aws/aws-sdk-go/blob/v1.55.5/internal/sync/singleflight/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -688,8 +688,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## github.com/cespare/xxhash/v2
 
 * Name: github.com/cespare/xxhash/v2
-* Version: v2.2.0
-* License: [MIT](https://github.com/cespare/xxhash/blob/v2.2.0/LICENSE.txt)
+* Version: v2.3.0
+* License: [MIT](https://github.com/cespare/xxhash/blob/v2.3.0/LICENSE.txt)
 
 ```
 Copyright (c) 2016 Caleb Spare
@@ -937,8 +937,8 @@ SOFTWARE.
 ## github.com/davecgh/go-spew/spew
 
 * Name: github.com/davecgh/go-spew/spew
-* Version: v1.1.1
-* License: [ISC](https://github.com/davecgh/go-spew/blob/v1.1.1/LICENSE)
+* Version: v1.1.2-0.20180830191138-d8f796af33cc
+* License: [ISC](https://github.com/davecgh/go-spew/blob/d8f796af33cc/LICENSE)
 
 ```
 ISC License
@@ -1128,6 +1128,36 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+```
+
+## github.com/fxamacker/cbor/v2
+
+* Name: github.com/fxamacker/cbor/v2
+* Version: v2.7.0
+* License: [MIT](https://github.com/fxamacker/cbor/blob/v2.7.0/LICENSE)
+
+```
+MIT License
+
+Copyright (c) 2019-present Faye Amacker
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ## github.com/go-logr/logr
@@ -1768,8 +1798,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/go-openapi/swag
 
 * Name: github.com/go-openapi/swag
-* Version: v0.22.3
-* License: [Apache-2.0](https://github.com/go-openapi/swag/blob/v0.22.3/LICENSE)
+* Version: v0.22.4
+* License: [Apache-2.0](https://github.com/go-openapi/swag/blob/v0.22.4/LICENSE)
 
 ```
 
@@ -4043,8 +4073,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/prometheus/common
 
 * Name: github.com/prometheus/common
-* Version: v0.53.0
-* License: [Apache-2.0](https://github.com/prometheus/common/blob/v0.53.0/LICENSE)
+* Version: v0.55.0
+* License: [Apache-2.0](https://github.com/prometheus/common/blob/v0.55.0/LICENSE)
 
 ```
                                  Apache License
@@ -4251,88 +4281,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-## github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
-
-* Name: github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
-* Version: v0.53.0
-* License: [BSD-3-Clause](https://github.com/prometheus/common/blob/v0.53.0/internal/bitbucket.org/ww/goautoneg/README.txt)
-
-```
-PACKAGE
-
-package goautoneg
-import "bitbucket.org/ww/goautoneg"
-
-HTTP Content-Type Autonegotiation.
-
-The functions in this package implement the behaviour specified in
-http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-
-Copyright (c) 2011, Open Knowledge Foundation Ltd.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-    Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-
-    Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in
-    the documentation and/or other materials provided with the
-    distribution.
-
-    Neither the name of the Open Knowledge Foundation Ltd. nor the
-    names of its contributors may be used to endorse or promote
-    products derived from this software without specific prior written
-    permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-FUNCTIONS
-
-func Negotiate(header string, alternatives []string) (content_type string)
-Negotiate the most appropriate content_type given the accept header
-and a list of alternatives.
-
-func ParseAccept(header string) (accept []Accept)
-Parse an Accept Header string returning a sorted list
-of clauses
-
-
-TYPES
-
-type Accept struct {
-    Type, SubType string
-    Q             float32
-    Params        map[string]string
-}
-Structure to represent a clause in an HTTP Accept Header
-
-
-SUBDIRECTORIES
-
-	.hg
-
-```
-
 ## github.com/prometheus/procfs
 
 * Name: github.com/prometheus/procfs
-* Version: v0.12.0
-* License: [Apache-2.0](https://github.com/prometheus/procfs/blob/v0.12.0/LICENSE)
+* Version: v0.15.1
+* License: [Apache-2.0](https://github.com/prometheus/procfs/blob/v0.15.1/LICENSE)
 
 ```
                                  Apache License
@@ -4635,8 +4588,8 @@ SOFTWARE.
 ## github.com/spf13/cobra
 
 * Name: github.com/spf13/cobra
-* Version: v1.7.0
-* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.7.0/LICENSE.txt)
+* Version: v1.8.1
+* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.8.1/LICENSE.txt)
 
 ```
                                 Apache License
@@ -4854,6 +4807,38 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
+## github.com/x448/float16
+
+* Name: github.com/x448/float16
+* Version: v0.8.4
+* License: [MIT](https://github.com/x448/float16/blob/v0.8.4/LICENSE)
+
+```
+MIT License
+
+Copyright (c) 2019 Montgomery Edwards⁴⁴⁸ and Faye Amacker
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+```
+
 ## github.com/xo/terminfo
 
 * Name: github.com/xo/terminfo
@@ -4991,8 +4976,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/oauth2
 
 * Name: golang.org/x/oauth2
-* Version: v0.18.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/oauth2/+/v0.18.0:LICENSE)
+* Version: v0.21.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/oauth2/+/v0.21.0:LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -5425,8 +5410,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## google.golang.org/protobuf
 
 * Name: google.golang.org/protobuf
-* Version: v1.34.1
-* License: [BSD-3-Clause](https://github.com/protocolbuffers/protobuf-go/blob/v1.34.1/LICENSE)
+* Version: v1.34.2
+* License: [BSD-3-Clause](https://github.com/protocolbuffers/protobuf-go/blob/v1.34.2/LICENSE)
 
 ```
 Copyright (c) 2018 The Go Authors. All rights reserved.
@@ -5771,8 +5756,8 @@ limitations under the License.
 ## k8s.io/api
 
 * Name: k8s.io/api
-* Version: v0.30.3
-* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.30.3/LICENSE)
+* Version: v0.31.1
+* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.31.1/LICENSE)
 
 ```
 
@@ -5983,8 +5968,8 @@ limitations under the License.
 ## k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 
 * Name: k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
-* Version: v0.30.3
-* License: [Apache-2.0](https://github.com/kubernetes/apiextensions-apiserver/blob/v0.30.3/LICENSE)
+* Version: v0.31.0
+* License: [Apache-2.0](https://github.com/kubernetes/apiextensions-apiserver/blob/v0.31.0/LICENSE)
 
 ```
 
@@ -6195,8 +6180,8 @@ limitations under the License.
 ## k8s.io/apimachinery/pkg
 
 * Name: k8s.io/apimachinery/pkg
-* Version: v0.30.3
-* License: [Apache-2.0](https://github.com/kubernetes/apimachinery/blob/v0.30.3/LICENSE)
+* Version: v0.31.1
+* License: [Apache-2.0](https://github.com/kubernetes/apimachinery/blob/v0.31.1/LICENSE)
 
 ```
 
@@ -6407,8 +6392,8 @@ limitations under the License.
 ## k8s.io/apimachinery/third_party/forked/golang
 
 * Name: k8s.io/apimachinery/third_party/forked/golang
-* Version: v0.30.3
-* License: [BSD-3-Clause](https://github.com/kubernetes/apimachinery/blob/v0.30.3/third_party/forked/golang/LICENSE)
+* Version: v0.31.1
+* License: [BSD-3-Clause](https://github.com/kubernetes/apimachinery/blob/v0.31.1/third_party/forked/golang/LICENSE)
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -6444,8 +6429,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/client-go
 
 * Name: k8s.io/client-go
-* Version: v0.30.3
-* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.30.3/LICENSE)
+* Version: v0.31.1
+* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.31.1/LICENSE)
 
 ```
 
@@ -6656,8 +6641,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/component-base/cli/flag
 
 * Name: k8s.io/component-base/cli/flag
-* Version: v0.30.3
-* License: [Apache-2.0](https://github.com/kubernetes/component-base/blob/v0.30.3/LICENSE)
+* Version: v0.31.0
+* License: [Apache-2.0](https://github.com/kubernetes/component-base/blob/v0.31.0/LICENSE)
 
 ```
 
@@ -7530,8 +7515,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/utils
 
 * Name: k8s.io/utils
-* Version: v0.0.0-20240102154912-e7106e64919e
-* License: [Apache-2.0](https://github.com/kubernetes/utils/blob/e7106e64919e/LICENSE)
+* Version: v0.0.0-20240711033017-18e509b52bc8
+* License: [Apache-2.0](https://github.com/kubernetes/utils/blob/18e509b52bc8/LICENSE)
 
 ```
 
@@ -7742,8 +7727,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/utils/internal/third_party/forked/golang/net
 
 * Name: k8s.io/utils/internal/third_party/forked/golang/net
-* Version: v0.0.0-20240102154912-e7106e64919e
-* License: [BSD-3-Clause](https://github.com/kubernetes/utils/blob/e7106e64919e/internal/third_party/forked/golang/LICENSE)
+* Version: v0.0.0-20240711033017-18e509b52bc8
+* License: [BSD-3-Clause](https://github.com/kubernetes/utils/blob/18e509b52bc8/internal/third_party/forked/golang/LICENSE)
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved.
@@ -7990,8 +7975,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## sigs.k8s.io/controller-runtime
 
 * Name: sigs.k8s.io/controller-runtime
-* Version: v0.18.4
-* License: [Apache-2.0](https://github.com/kubernetes-sigs/controller-runtime/blob/v0.18.4/LICENSE)
+* Version: v0.19.0
+* License: [Apache-2.0](https://github.com/kubernetes-sigs/controller-runtime/blob/v0.19.0/LICENSE)
 
 ```
                                  Apache License
