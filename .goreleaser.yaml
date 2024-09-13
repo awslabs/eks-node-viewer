@@ -1,4 +1,5 @@
 project_name: eks-node-viewer
+version: 2
 
 source:
   enabled: false
@@ -38,7 +39,7 @@ release:
   prerelease: auto
 
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  version_template: "{{ .Tag }}-next"
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_sha256_checksums.txt"
@@ -46,8 +47,7 @@ checksum:
 
 changelog:
   sort: asc
-  skip: false
-  use: git # github(-native)
+  use: github
   filters:
     exclude:
     - '^docs:'
