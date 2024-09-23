@@ -7,7 +7,7 @@ toolchain go1.23.1
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/charmbracelet/bubbles v0.20.0
-	github.com/charmbracelet/bubbletea v1.1.0
+	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	go.uber.org/multierr v1.11.0
