@@ -222,9 +222,6 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		u.progress.ShowPercentage = false
 		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
 
-		// Send custom metric to DogStatsD
-		sendSpendToDogStatsD(monthlyPrice)
-
 		// message printer formats numbers nicely with commas
 		enPrinter := message.NewPrinter(language.English)
 		clusterPrice := enPrinter.Sprintf("$%0.3f/hour | $%0.3f/month", stats.TotalPrice, monthlyPrice)
@@ -236,6 +233,9 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 				used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0))
 		}
 		firstLine = false
+
+		// Send custom metric to DogStatsD
+		sendSpendToDogStatsD(monthlyPrice)
 	}
 }
 
