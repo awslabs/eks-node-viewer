@@ -81,4 +81,4 @@ jobs:
         uses: akhilerm/tag-push-action@v2.2.0
         with:
           src: ${{ steps.meta.outputs.tags }}
-          dst: public.ecr.aws/s0t1h2z6/arcane/${{ github.event.repository.name }}:${{ steps.meta.outputs.version }}
+          dst: public.ecr.aws/s0t1h2z6/${{ github.event.repository.name }}:${{ steps.meta.outputs.version }}
