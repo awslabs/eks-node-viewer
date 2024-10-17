@@ -17,7 +17,9 @@ package model
 import (
 	"bytes"
 	"fmt"
+	"github.com/DataDog/datadog-go/v5/statsd"
 	"io"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -219,6 +221,7 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 
 		u.progress.ShowPercentage = false
 		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
+
 		// message printer formats numbers nicely with commas
 		enPrinter := message.NewPrinter(language.English)
 		clusterPrice := enPrinter.Sprintf("$%0.3f/hour | $%0.3f/month", stats.TotalPrice, monthlyPrice)
@@ -230,6 +233,28 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 				used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0))
 		}
 		firstLine = false
+
+		// Send custom metric to DogStatsD
+		sendSpendToDogStatsD(monthlyPrice)
+	}
+}
+
+func sendSpendToDogStatsD(spend float64) {
+	client, err := statsd.New("unix:///var/run/datadog/dsd.socket")
+	if err != nil {
+		log.Fatalf("Error creating DogStatsD client: %v", err)
+	}
+	defer func(client *statsd.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Fatalf("Error closing DogStatsD client: %v", err)
+		}
+	}(client)
+	statsd.WithNamespace("eks-node-viewer")
+	// Send the cluster monthly spend as a custom metric
+	err = client.Gauge("monthly.spend", spend, nil, 1)
+	if err != nil {
+		log.Fatalf("Error sending monthly spend metric to DogStatsD: %v", err)
 	}
 }
 
