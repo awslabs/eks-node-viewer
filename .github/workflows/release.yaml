@@ -1,52 +1,19 @@
-# This workflow will build and release golang project
+name: Release a new version
 
-name: Binary release
-
-on:
-  push:
-    tags:
-      - '*'
+on: workflow_dispatch
 
 jobs:
-  build:
-    name: Build
+  create_release:
+    name: Create Release
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.5
-      with:
-        fetch-depth: 0 # disable shallow clone - get all
-
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v5.0.1
-      with:
-        go-version: stable
-      id: go
-
-    - name: Fetch build tag
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/}
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-      shell: /bin/bash -e {0}
-
-    - name: Print build tag
-      run: echo "Building release ${VERSION}"
-
-
-    - name: Generate code
-      run: make generate
-
-    - name: Check for changes
-      run: |
-        git diff
-        git diff-index --quiet HEAD
-
-    - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v4
-      with:
-        distribution: goreleaser
-        version: latest
-        args: release --clean
-        workdir: .
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create Release
+        uses: SneaksAndData/github-actions/semver_release@v0.1.9
+        with:
+          major_v: 0
+          minor_v: 0
