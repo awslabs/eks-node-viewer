@@ -5,6 +5,35 @@ The Amazon eks-node-viewer Product includes the following third-party software/l
 
 
 
+## github.com/DataDog/datadog-go/v5/statsd
+
+* Name: github.com/DataDog/datadog-go/v5/statsd
+* Version: v5.5.0
+* License: [MIT](https://github.com/DataDog/datadog-go/blob/v5.5.0/LICENSE.txt)
+
+```
+Copyright (c) 2015 Datadog, Inc
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
 ## github.com/aws/aws-sdk-go
 
 * Name: github.com/aws/aws-sdk-go
@@ -720,8 +749,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## github.com/charmbracelet/bubbles
 
 * Name: github.com/charmbracelet/bubbles
-* Version: v0.18.0
-* License: [MIT](https://github.com/charmbracelet/bubbles/blob/v0.18.0/LICENSE)
+* Version: v0.20.0
+* License: [MIT](https://github.com/charmbracelet/bubbles/blob/v0.20.0/LICENSE)
 
 ```
 MIT License
@@ -751,8 +780,8 @@ SOFTWARE.
 ## github.com/charmbracelet/bubbletea
 
 * Name: github.com/charmbracelet/bubbletea
-* Version: v0.26.6
-* License: [MIT](https://github.com/charmbracelet/bubbletea/blob/v0.26.6/LICENSE)
+* Version: v1.1.1
+* License: [MIT](https://github.com/charmbracelet/bubbletea/blob/v1.1.1/LICENSE)
 
 ```
 MIT License
@@ -813,8 +842,8 @@ SOFTWARE.
 ## github.com/charmbracelet/lipgloss
 
 * Name: github.com/charmbracelet/lipgloss
-* Version: v0.12.1
-* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.12.1/LICENSE)
+* Version: v0.13.0
+* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.13.0/LICENSE)
 
 ```
 MIT License
@@ -844,39 +873,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/ansi
 
 * Name: github.com/charmbracelet/x/ansi
-* Version: v0.1.4
-* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.1.4/ansi/LICENSE)
-
-```
-MIT License
-
-Copyright (c) 2023 Charmbracelet, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
-## github.com/charmbracelet/x/input
-
-* Name: github.com/charmbracelet/x/input
-* Version: v0.1.0
-* License: [MIT](https://github.com/charmbracelet/x/blob/input/v0.1.0/input/LICENSE)
+* Version: v0.2.3
+* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.2.3/ansi/LICENSE)
 
 ```
 MIT License
@@ -906,8 +904,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/term
 
 * Name: github.com/charmbracelet/x/term
-* Version: v0.1.1
-* License: [MIT](https://github.com/charmbracelet/x/blob/term/v0.1.1/term/LICENSE)
+* Version: v0.2.0
+* License: [MIT](https://github.com/charmbracelet/x/blob/term/v0.2.0/term/LICENSE)
 
 ```
 MIT License
@@ -988,37 +986,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
-
-## github.com/erikgeiser/coninput
-
-* Name: github.com/erikgeiser/coninput
-* Version: v0.0.0-20211004153227-1c3628e74d0f
-* License: [MIT](https://github.com/erikgeiser/coninput/blob/1c3628e74d0f/LICENSE)
-
-```
-MIT License
-
-Copyright (c) 2021 Erik G.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 ```
 
 ## github.com/evanphx/json-patch/v5
@@ -2969,8 +2936,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## github.com/mattn/go-runewidth
 
 * Name: github.com/mattn/go-runewidth
-* Version: v0.0.15
-* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.15/LICENSE)
+* Version: v0.0.16
+* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.16/LICENSE)
 
 ```
 The MIT License (MIT)
@@ -3491,37 +3458,6 @@ SOFTWARE.
 MIT License
 
 Copyright (c) 2022 Erik Geiser and Christian Muehlhaeuser
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
-## github.com/muesli/reflow/ansi
-
-* Name: github.com/muesli/reflow/ansi
-* Version: v0.3.0
-* License: [MIT](https://github.com/muesli/reflow/blob/v0.3.0/LICENSE)
-
-```
-MIT License
-
-Copyright (c) 2019 Christian Muehlhaeuser
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -4839,37 +4775,6 @@ SOFTWARE.
 
 ```
 
-## github.com/xo/terminfo
-
-* Name: github.com/xo/terminfo
-* Version: v0.0.0-20220910002029-abceb7e1c41e
-* License: [MIT](https://github.com/xo/terminfo/blob/abceb7e1c41e/LICENSE)
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2016 Anmol Sethi
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
 ## go.uber.org/multierr
 
 * Name: go.uber.org/multierr
@@ -5050,11 +4955,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys/unix
 
 * Name: golang.org/x/sys/unix
-* Version: v0.22.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.22.0:LICENSE)
+* Version: v0.24.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.24.0:LICENSE)
 
 ```
-Copyright (c) 2009 The Go Authors. All rights reserved.
+Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -5066,7 +4971,7 @@ notice, this list of conditions and the following disclaimer.
 copyright notice, this list of conditions and the following disclaimer
 in the documentation and/or other materials provided with the
 distribution.
-   * Neither the name of Google Inc. nor the names of its
+   * Neither the name of Google LLC nor the names of its
 contributors may be used to endorse or promote products derived from
 this software without specific prior written permission.
 
@@ -5124,11 +5029,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/text
 
 * Name: golang.org/x/text
-* Version: v0.16.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.16.0:LICENSE)
+* Version: v0.18.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.18.0:LICENSE)
 
 ```
-Copyright (c) 2009 The Go Authors. All rights reserved.
+Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -5140,7 +5045,7 @@ notice, this list of conditions and the following disclaimer.
 copyright notice, this list of conditions and the following disclaimer
 in the documentation and/or other materials provided with the
 distribution.
-   * Neither the name of Google Inc. nor the names of its
+   * Neither the name of Google LLC nor the names of its
 contributors may be used to endorse or promote products derived from
 this software without specific prior written permission.
 

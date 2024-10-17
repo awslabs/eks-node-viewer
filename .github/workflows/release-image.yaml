@@ -1,0 +1,100 @@
+name: Publish eks-node-viewer image
+run-name: Publish ${{github.ref_name}} to ${{ inputs.environment }} by @${{ github.actor }}
+
+on: workflow_dispatch
+
+jobs:
+  release_container_image:
+    name: Release container image
+
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout head commit
+        if: ${{ github.ref != 'refs/heads/main' && always() }}
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/checkout@v4
+        name: Checkout main
+        if: ${{ github.ref == 'refs/heads/main' && always() }}
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Import Secrets
+        uses: hashicorp/vault-action@v3.0.0
+        with:
+          url: https://hashicorp-vault.production.sneaksanddata.com/
+          role: github
+          method: jwt
+          secrets: |
+            /secret/data/common/package-publishing/aws-ca/production/artifact-user access_key ;
+            /secret/data/common/package-publishing/aws-ca/production/artifact-user access_key_id ;
+
+            /secret/data/common/package-publishing/aws-ecr/dev/container-user access_key | ECR_DEV_ACCESS_KEY ;
+            /secret/data/common/package-publishing/aws-ecr/dev/container-user access_key_id | ECR_DEV_ACCESS_KEY_ID ;
+
+            /secret/data/common/package-publishing/aws-ecr/production/container-user access_key | ECR_PROD_ACCESS_KEY ;
+            /secret/data/common/package-publishing/aws-ecr/production/container-user access_key_id | ECR_PROD_ACCESS_KEY_ID ;
+
+      - name: Setup AWS CA
+        uses: SneaksAndData/github-actions/setup_aws_ca@v0.1.8
+        with:
+          aws_access_key: ${{ env.ACCESS_KEY }}
+          aws_access_key_id: ${{ env.ACCESS_KEY_ID }}
+          mode: read
+          aws_ca_domain: esd-code-artifact-production
+          aws_ca_domain_owner: 497010676583
+          aws_ca_repository: esd-artifacts
+        id: setup_aws_ca
+      - name: Configure AWS Credentials (DEV)
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ env.ECR_DEV_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.ECR_DEV_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Build and Push Image (DEV)
+        env:
+          CR_USER: AWS
+          CR_REPO: 957747334372.dkr.ecr.eu-central-1.amazonaws.com
+          CR_REGION: eu-central-1
+        run: |
+          set -e
+
+          aws ecr get-login-password --region "$CR_REGION" | docker login --username "$CR_USER" --password-stdin "$CR_REPO"
+          version=$(git describe --tags --abbrev=7)
+
+          docker build -f .container/Dockerfile . --tag=$CR_REPO/eks-node-viewer:$version && \
+            docker push $CR_REPO/eks-node-viewer:$version
+
+      - name: Configure AWS Credentials (PROD)
+        if: startsWith(github.ref, 'refs/tags')
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ env.ECR_PROD_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.ECR_PROD_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Push Image (PROD)
+        if: startsWith(github.ref, 'refs/tags')
+        env:
+          CR_USER: AWS
+          CR_REPO: 497010676583.dkr.ecr.eu-central-1.amazonaws.com
+          CR_DEV_REPO: 957747334372.dkr.ecr.eu-central-1.amazonaws.com
+          CR_REGION: eu-central-1
+        run: |
+          set -e
+
+          aws ecr get-login-password --region "$CR_REGION" | docker login --username "$CR_USER" --password-stdin "$CR_REPO"
+          version=$(git describe --tags --abbrev=7)
+
+          docker tag $CR_DEV_REPO/eks-node-viewer:$version $CR_REPO/eks-node-viewer:$version && docker push $CR_REPO/eks-node-viewer:$version
