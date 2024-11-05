@@ -90,6 +90,10 @@ func (n *Node) IsFargate() bool {
 	return n.node.Labels["eks.amazonaws.com/compute-type"] == "fargate"
 }
 
+func (n *Node) IsAuto() bool {
+	return n.node.Labels["eks.amazonaws.com/compute-type"] == "auto"
+}
+
 func (n *Node) Labels() map[string]string {
 	return n.node.Labels
 }

@@ -119,6 +119,30 @@ func TestNodeTypeFargate(t *testing.T) {
 	}
 }
 
+func TestNodeTypeAuto(t *testing.T) {
+	for label, value := range map[string]string{
+		"eks.amazonaws.com/compute-type": "auto",
+	} {
+		n := testNode("mynode")
+		n.Labels = map[string]string{
+			label: value,
+		}
+		node := model.NewNode(n)
+		if node.IsOnDemand() {
+			t.Errorf("exepcted to not be on-demand")
+		}
+		if node.IsSpot() {
+			t.Errorf("exepcted to not be spot")
+		}
+		if node.IsFargate() {
+			t.Errorf("exepcted to not be fargate")
+		}
+		if !node.IsAuto() {
+			t.Errorf("exepcted to be auto")
+		}
+	}
+}
+
 func TestNodeNotReadyFalse(t *testing.T) {
 	for _, status := range []v1.ConditionStatus{v1.ConditionFalse, v1.ConditionUnknown} {
 		t.Run(string(status), func(t *testing.T) {

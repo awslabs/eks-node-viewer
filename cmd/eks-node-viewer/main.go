@@ -74,6 +74,7 @@ func main() {
 		log.Fatalf("creating style, %s", err)
 	}
 	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style)
+	m.DisablePricing = flags.DisablePricing
 	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
 	var nodeSelector labels.Selector
