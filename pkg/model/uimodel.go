@@ -44,13 +44,14 @@ var (
 )
 
 type UIModel struct {
-	progress    progress.Model
-	cluster     *Cluster
-	extraLabels []string
-	paginator   paginator.Model
-	height      int
-	nodeSorter  func(lhs, rhs *Node) bool
-	style       *Style
+	progress       progress.Model
+	cluster        *Cluster
+	extraLabels    []string
+	paginator      paginator.Model
+	height         int
+	nodeSorter     func(lhs, rhs *Node) bool
+	style          *Style
+	DisablePricing bool
 }
 
 func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
@@ -144,7 +145,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 
 		if firstLine {
 			priceLabel := fmt.Sprintf("/$%0.4f", n.Price)
-			if !n.HasPrice() {
+			if !n.HasPrice() || u.DisablePricing {
 				priceLabel = ""
 			}
 			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
@@ -158,6 +159,10 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 				fmt.Fprintf(w, "\tFargate")
 			} else {
 				fmt.Fprintf(w, "\t-")
+			}
+
+			if n.IsAuto() {
+				fmt.Fprintf(w, "/Auto")
 			}
 
 			// node status
@@ -222,6 +227,9 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		// message printer formats numbers nicely with commas
 		enPrinter := message.NewPrinter(language.English)
 		clusterPrice := enPrinter.Sprintf("$%0.3f/hour | $%0.3f/month", stats.TotalPrice, monthlyPrice)
+		if u.DisablePricing {
+			clusterPrice = ""
+		}
 		if firstLine {
 			enPrinter.Fprintf(w, "%d nodes\t(%s/%s)\t%s\t%s\t%s\t%s\n",
 				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
