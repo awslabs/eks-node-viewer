@@ -79,12 +79,23 @@ func (p *Pod) Phase() v1.PodPhase {
 	return p.pod.Status.Phase
 }
 
-// Requested returns the sum of the resources requested by the pod. This doesn't include any init containers as we
-// are interested in the steady state usage of the pod
+// Requested returns the sum of the resources requested by the pod.
+// Also include resources for init containers that are sidecars as described in
+// https://kubernetes.io/blog/2023/08/25/native-sidecar-containers .
 func (p *Pod) Requested() v1.ResourceList {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	requested := v1.ResourceList{}
+	for _, c := range p.pod.Spec.InitContainers {
+		if c.RestartPolicy == nil || *c.RestartPolicy != v1.ContainerRestartPolicyAlways {
+			continue
+		}
+		for rn, q := range c.Resources.Requests {
+			existing := requested[rn]
+			existing.Add(q)
+			requested[rn] = existing
+		}
+	}
 	for _, c := range p.pod.Spec.Containers {
 		for rn, q := range c.Resources.Requests {
 			existing := requested[rn]

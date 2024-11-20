@@ -159,8 +159,8 @@ func TestClusterAddPod(t *testing.T) {
 		t.Errorf("expected 0 pods, got %d", got)
 	}
 
-	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("1")) != 0 {
-		t.Errorf("expected 1 CPU used, got %s", got.String())
+	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("2")) != 0 {
+		t.Errorf("expected 2 CPU used, got %s", got.String())
 	}
 
 	// deleting the pod should remove the usage
@@ -194,8 +194,8 @@ func TestClusterDeleteNodeDeletesPods(t *testing.T) {
 		t.Errorf("expected 0 pods, got %d", got)
 	}
 
-	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("1")) != 0 {
-		t.Errorf("expected 1 CPU used, got %s", got.String())
+	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("2")) != 0 {
+		t.Errorf("expected 2 CPU used, got %s", got.String())
 	}
 
 	// deleting the node should clear all of the usage of pods that were bound to the node
