@@ -25,6 +25,7 @@ import (
 )
 
 func testPod(namespace, name string) *v1.Pod {
+	restartAlways := v1.ContainerRestartPolicyAlways
 	p := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
@@ -34,6 +35,29 @@ func testPod(namespace, name string) *v1.Pod {
 			Phase: v1.PodPending,
 		},
 		Spec: v1.PodSpec{
+			InitContainers: []v1.Container{
+				{
+					Image: "normalinit",
+					Name:  "container",
+					Resources: v1.ResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceCPU:    resource.MustParse("1"),
+							v1.ResourceMemory: resource.MustParse("1Gi"),
+						},
+					},
+				},
+				{
+					Image: "sidecar",
+					Name:  "container",
+					Resources: v1.ResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceCPU:    resource.MustParse("1"),
+							v1.ResourceMemory: resource.MustParse("1Gi"),
+						},
+					},
+					RestartPolicy: &restartAlways,
+				},
+			},
 			Containers: []v1.Container{
 				{
 					Image: "test-image",
@@ -70,10 +94,10 @@ func TestNewPod(t *testing.T) {
 		t.Errorf("expected Phase = %v, got %v", exp, got)
 	}
 
-	if exp, got := resource.MustParse("1"), p.Requested()[v1.ResourceCPU]; exp.Cmp(got) != 0 {
+	if exp, got := resource.MustParse("2"), p.Requested()[v1.ResourceCPU]; exp.Cmp(got) != 0 {
 		t.Errorf("expected CPU = %s, got %s", exp.String(), got.String())
 	}
-	if exp, got := resource.MustParse("1Gi"), p.Requested()[v1.ResourceMemory]; exp.Cmp(got) != 0 {
+	if exp, got := resource.MustParse("2Gi"), p.Requested()[v1.ResourceMemory]; exp.Cmp(got) != 0 {
 		t.Errorf("expected Memory = %s, got %s", exp.String(), got.String())
 	}
 }
