@@ -13,7 +13,7 @@ require (
 	go.uber.org/multierr v1.11.0
 	golang.org/x/text v0.19.0
 	k8s.io/api v0.31.1
-	k8s.io/apimachinery v0.31.1
+	k8s.io/apimachinery v0.31.3
 	k8s.io/client-go v0.31.1
 	sigs.k8s.io/karpenter v1.0.4
 )
