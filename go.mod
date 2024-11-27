@@ -6,20 +6,20 @@ toolchain go1.23.1
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.194.0
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	go.uber.org/multierr v1.11.0
 	golang.org/x/text v0.19.0
-	k8s.io/api v0.31.1
+	k8s.io/api v0.31.3
 	k8s.io/apimachinery v0.31.3
 	k8s.io/client-go v0.31.1
 	sigs.k8s.io/karpenter v1.0.4
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.194.0 // indirect
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/awslabs/operatorpkg v0.0.0-20240805231134-67d0acfb6306 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
