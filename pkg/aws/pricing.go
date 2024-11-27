@@ -116,7 +116,7 @@ func NewPricingAPI(sess *session.Session, region string) pricingiface.PricingAPI
 var allPrices = []map[string]map[ec2types.InstanceType]float64{
 	InitialOnDemandPricesAWS,
 	InitialOnDemandPricesUSGov,
-	InitialOnDemandPricesUSGov,
+	InitialOnDemandPricesCN,
 }
 
 func getStaticPrices(region string) map[ec2types.InstanceType]float64 {
