@@ -20,6 +20,7 @@ import (
 	"sync"
 	"time"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
@@ -221,19 +222,19 @@ func (n *Node) Created() time.Time {
 	return n.node.CreationTimestamp.Time
 }
 
-func (n *Node) InstanceType() string {
+func (n *Node) InstanceType() ec2types.InstanceType {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	if n.IsFargate() {
 		if len(n.Pods()) == 1 {
 			cpu, mem, ok := n.Pods()[0].FargateCapacityProvisioned()
 			if ok {
-				return fmt.Sprintf("%gvCPU-%gGB", cpu, mem)
+				return ec2types.InstanceType(fmt.Sprintf("%gvCPU-%gGB", cpu, mem))
 			}
 		}
 		return "Fargate"
 	}
-	return n.node.Labels[v1.LabelInstanceTypeStable]
+	return ec2types.InstanceType(n.node.Labels[v1.LabelInstanceTypeStable])
 }
 
 func (n *Node) Zone() string {
