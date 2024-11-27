@@ -231,7 +231,7 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 			clusterPrice = ""
 		}
 		if firstLine {
-			enPrinter.Fprintf(w, "%d nodes\t(%s/%s)\t%s\t%s\t%s\t%s\n",
+			enPrinter.Fprintf(w, "%d nodes\t(%10s/%s)\t%s\t%s\t%s\t%s\n",
 				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
 		} else {
 			enPrinter.Fprintf(w, " \t%s/%s\t%s\t%s\t%s\t\n",
