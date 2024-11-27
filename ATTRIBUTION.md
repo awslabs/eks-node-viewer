@@ -1148,8 +1148,8 @@ SOFTWARE.
 ## github.com/charmbracelet/bubbletea
 
 * Name: github.com/charmbracelet/bubbletea
-* Version: v1.1.1
-* License: [MIT](https://github.com/charmbracelet/bubbletea/blob/v1.1.1/LICENSE)
+* Version: v1.2.4
+* License: [MIT](https://github.com/charmbracelet/bubbletea/blob/v1.2.4/LICENSE)
 
 ```
 MIT License
@@ -1210,8 +1210,8 @@ SOFTWARE.
 ## github.com/charmbracelet/lipgloss
 
 * Name: github.com/charmbracelet/lipgloss
-* Version: v0.13.0
-* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.13.0/LICENSE)
+* Version: v1.0.0
+* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v1.0.0/LICENSE)
 
 ```
 MIT License
@@ -1241,8 +1241,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/ansi
 
 * Name: github.com/charmbracelet/x/ansi
-* Version: v0.2.3
-* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.2.3/ansi/LICENSE)
+* Version: v0.4.5
+* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.4.5/ansi/LICENSE)
 
 ```
 MIT License
@@ -1272,8 +1272,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/term
 
 * Name: github.com/charmbracelet/x/term
-* Version: v0.2.0
-* License: [MIT](https://github.com/charmbracelet/x/blob/term/v0.2.0/term/LICENSE)
+* Version: v0.2.1
+* License: [MIT](https://github.com/charmbracelet/x/blob/term/v0.2.1/term/LICENSE)
 
 ```
 MIT License
@@ -5286,8 +5286,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sync/errgroup
 
 * Name: golang.org/x/sync/errgroup
-* Version: v0.8.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sync/+/v0.8.0:LICENSE)
+* Version: v0.9.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sync/+/v0.9.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
@@ -5323,8 +5323,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys/unix
 
 * Name: golang.org/x/sys/unix
-* Version: v0.24.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.24.0:LICENSE)
+* Version: v0.27.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.27.0:LICENSE)
 
 ```
 Copyright 2009 The Go Authors.
@@ -6029,8 +6029,8 @@ limitations under the License.
 ## k8s.io/api
 
 * Name: k8s.io/api
-* Version: v0.31.1
-* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.31.1/LICENSE)
+* Version: v0.31.3
+* License: [Apache-2.0](https://github.com/kubernetes/api/blob/v0.31.3/LICENSE)
 
 ```
 
@@ -6702,8 +6702,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## k8s.io/client-go
 
 * Name: k8s.io/client-go
-* Version: v0.31.1
-* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.31.1/LICENSE)
+* Version: v0.31.3
+* License: [Apache-2.0](https://github.com/kubernetes/client-go/blob/v0.31.3/LICENSE)
 
 ```
 
