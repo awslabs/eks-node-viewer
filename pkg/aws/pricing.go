@@ -190,6 +190,8 @@ func (p *pricingProvider) FargatePrice(cpu, memory float64) (float64, bool) {
 	return cpu*p.fargateVCPUPricePerHour + memory*p.fargateGBPricePerHour, true
 }
 
+// TODO: method to fetch attached EBS prices
+
 // SpotPrice returns the last known spot price for a given instance type and zone, returning an error
 // if there is no known spot pricing for that instance type or zone
 func (p *pricingProvider) SpotPrice(instanceType ec2types.InstanceType, zone string) (float64, bool) {
