@@ -97,6 +97,9 @@ extra-labels=topology.kubernetes.io/zone,karpenter.sh/nodepool
 
 # sort so that the newest nodes are first
 node-sort=creation=asc
+
+# change default color style
+style=#2E91D2,#ffff00,#D55E00
 ```
 
 ### Troubleshooting
