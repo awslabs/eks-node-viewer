@@ -301,7 +301,7 @@ func (n *Node) ComputeLabel(labelName string) string {
 	if match := resourceLabelRe.FindStringSubmatch(labelName); len(match) > 0 {
 		return pctUsage(n.Allocatable(), n.Used(), match[1])
 	}
-	return labelName
+	return "-"
 }
 
 // NotReadyTime is the time that the node went NotReady, or when it was created if it hasn't been marked as NotReady.
