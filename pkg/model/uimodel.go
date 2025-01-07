@@ -183,9 +183,6 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 				if !ok {
 					// support computed label values
 					labelValue = n.ComputeLabel(label)
-					if labelValue == label {
-						labelValue = "-"
-					}
 				}
 				fmt.Fprintf(w, "\t%s", labelValue)
 			}
