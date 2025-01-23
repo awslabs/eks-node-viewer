@@ -52,17 +52,22 @@ type pricingProvider struct {
 	fargateGBPricePerHour   float64
 }
 
+type VolumeInfo struct {
+	VolumeType string
+	VolumeSize int64
+}
+
 func (p *pricingProvider) OnUpdate(onUpdate func()) {
 	p.onUpdateFuncs = append(p.onUpdateFuncs, onUpdate)
 }
 
 func (p *pricingProvider) NodePrice(n *model.Node) (float64, bool) {
 	if n.IsOnDemand() {
-		if price, ok := p.OnDemandPrice(n.InstanceType()); ok {
+		if price, ok := p.OnDemandPrice(n.InstanceType(), n.InstanceID()); ok {
 			return price, true
 		}
 	} else if n.IsSpot() {
-		if price, ok := p.SpotPrice(n.InstanceType(), n.Zone()); ok {
+		if price, ok := p.SpotPrice(n.InstanceType(), n.Zone(), n.InstanceID()); ok {
 			return price, true
 		}
 	} else if n.IsFargate() && len(n.Pods()) == 1 {
@@ -171,13 +176,18 @@ func NewPricingProvider(ctx context.Context, sess *session.Session) nvp.Provider
 
 // OnDemandPrice returns the last known on-demand price for a given instance type, returning an error if there is no
 // known on-demand pricing for the instance type.
-func (p *pricingProvider) OnDemandPrice(instanceType ec2types.InstanceType) (float64, bool) {
+func (p *pricingProvider) OnDemandPrice(instanceType ec2types.InstanceType, instanceID string) (float64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
+	volumePrice, ok := p.fetchAttachedEbsVolumesPricing(instanceID)
+	if !ok {
+		volumePrice = 0.0
+	}
 	price, ok := p.onDemandPrices[instanceType]
 	if !ok {
 		return 0.0, false
 	}
+	price += volumePrice
 	return price, true
 }
 
@@ -190,18 +200,163 @@ func (p *pricingProvider) FargatePrice(cpu, memory float64) (float64, bool) {
 	return cpu*p.fargateVCPUPricePerHour + memory*p.fargateGBPricePerHour, true
 }
 
+// function to fetch attached EBS volumes id of a given instance id
+func (p *pricingProvider) fetchAttachedEbsVolumesType(instanceID string) ([]VolumeInfo, error) {
+	var volumes []VolumeInfo
+	input := &ec2.DescribeVolumesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("attachment.instance-id"),
+				Values: []*string{aws.String(instanceID)},
+			},
+		},
+	}
+	result, err := p.ec2.DescribeVolumes(input)
+	if err != nil {
+		return nil, err
+	}
+	for _, volume := range result.Volumes {
+		volumeInfo := VolumeInfo{
+			VolumeType: aws.StringValue(volume.VolumeType),
+			VolumeSize: aws.Int64Value(volume.Size),
+		}
+		volumes = append(volumes, volumeInfo)
+	}
+	return volumes, nil
+}
+
+func (p *pricingProvider) fetchAttachedEbsVolumesPricing(instanceID string) (float64, bool) {
+	volumes, err := p.fetchAttachedEbsVolumesType(instanceID)
+	if err != nil {
+		log.Println("Unable to fetch EBS volumes:", err)
+		return 0, false
+	}
+
+	var totalEbsPrice float64
+	for _, volume := range volumes {
+		price, ok := p.getVolumePrice(volume.VolumeType)
+		if !ok {
+			return 0, false
+		}
+		price += float64(volume.VolumeSize) * price
+		totalEbsPrice += price
+	}
+
+	// totalEbsPrice is for a month, need a price per hour
+	// 30 days * 24 hours
+	totalEbsPrice = totalEbsPrice / 720
+	return totalEbsPrice, true
+}
+
+func (p *pricingProvider) getVolumePrice(volumeType string) (float64, bool) {
+	input := &pricing.GetProductsInput{
+		Filters: []*pricing.Filter{
+			{
+				Field: aws.String("productFamily"),
+				Type:  aws.String("TERM_MATCH"),
+				Value: aws.String("Storage"),
+			},
+			{
+				Field: aws.String("volumeApiName"),
+				Type:  aws.String("TERM_MATCH"),
+				Value: aws.String(volumeType),
+			},
+			{
+				Field: aws.String("regionCode"),
+				Type:  aws.String("TERM_MATCH"),
+				Value: aws.String(p.region),
+			},
+		},
+		ServiceCode: aws.String("AmazonEC2"),
+	}
+
+	result, err := p.pricing.GetProducts(input)
+	if err != nil {
+		log.Println("Failed to get products:", err)
+		return 0, false
+	}
+
+	for _, priceData := range result.PriceList {
+		price, ok := extractPriceFromData(priceData)
+		if !ok {
+			continue
+		}
+		return price, true
+	}
+	return 0, false
+}
+
+func extractPriceFromData(priceData aws.JSONValue) (float64, bool) {
+	priceMap := priceData
+
+	terms, ok := priceMap["terms"].(map[string]interface{})
+	if !ok {
+		return 0, false
+	}
+
+	onDemand, ok := terms["OnDemand"].(map[string]interface{})
+	if !ok {
+		return 0, false
+	}
+
+	// Get the first key from onDemand
+	var firstKey string
+	for k := range onDemand {
+		firstKey = k
+		break
+	}
+
+	priceDimensions, ok := onDemand[firstKey].(map[string]interface{})["priceDimensions"].(map[string]interface{})
+	if !ok {
+		return 0, false
+	}
+
+	// Get the first key from priceDimensions
+	for k := range priceDimensions {
+		firstKey = k
+		break
+	}
+
+	pricePerUnit, ok := priceDimensions[firstKey].(map[string]interface{})["pricePerUnit"].(map[string]interface{})
+	if !ok {
+		return 0, false
+	}
+
+	usdPrice, ok := pricePerUnit["USD"].(string)
+	if !ok {
+		return 0, false
+	}
+
+	price, err := strconv.ParseFloat(usdPrice, 64)
+	if err != nil {
+		return 0, false
+	}
+
+	return price, true
+}
+
 // SpotPrice returns the last known spot price for a given instance type and zone, returning an error
 // if there is no known spot pricing for that instance type or zone
-func (p *pricingProvider) SpotPrice(instanceType ec2types.InstanceType, zone string) (float64, bool) {
+func (p *pricingProvider) SpotPrice(instanceType ec2types.InstanceType, zone string, instanceID string) (float64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	if val, ok := p.spotPrices[instanceType]; ok {
-		if price, ok := p.spotPrices[instanceType].prices[zone]; ok {
-			return price, true
-		}
-		return val.defaultPrice, true
+	volumePrice, ok := p.fetchAttachedEbsVolumesPricing(instanceID)
+	if !ok {
+		volumePrice = 0.0
 	}
-	return 0.0, false
+	var price float64 = 0.0
+	var found bool
+	if val, ok := p.spotPrices[instanceType]; ok {
+		if zonePrice, ok := val.prices[zone]; ok {
+			price = zonePrice
+			found = true
+		} else {
+			price = val.defaultPrice
+			found = true
+		}
+	}
+	price += volumePrice
+	return price, found
 }
 
 func (p *pricingProvider) updatePricing(ctx context.Context) {
