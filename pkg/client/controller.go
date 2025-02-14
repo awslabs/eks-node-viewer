@@ -15,7 +15,6 @@ package client
 
 import (
 	"context"
-	"log"
 	"math"
 	"strconv"
 	"time"
@@ -121,6 +120,9 @@ func (m Controller) startNodeWatch(ctx context.Context, cluster *model.Cluster) 
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				node := model.NewNode(obj.(*v1.Node))
+				if node.ProviderID() == "" {
+					return
+				}
 				m.updatePrice(node)
 				n := cluster.AddNode(node)
 				n.Show()
@@ -134,13 +136,11 @@ func (m Controller) startNodeWatch(ctx context.Context, cluster *model.Cluster) 
 					cluster.DeleteNode(n.Spec.ProviderID)
 				} else {
 					node, ok := cluster.GetNode(n.Spec.ProviderID)
-					if !ok {
-						log.Println("unable to find node", n.Name)
-					} else {
+					if ok {
 						node.Update(n)
 						m.updatePrice(node)
+						node.Show()
 					}
-					node.Show()
 				}
 			},
 		},
