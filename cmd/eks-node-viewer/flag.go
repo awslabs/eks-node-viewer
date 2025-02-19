@@ -85,7 +85,7 @@ func ParseFlags() (Flags, error) {
 	flagSet.StringVar(&flags.Kubeconfig, "kubeconfig", kubeconfigDefault, "Absolute path to the kubeconfig file")
 
 	resourcesDefault := cfg.getValue("resources", "cpu")
-	flagSet.StringVar(&flags.Resources, "resources", resourcesDefault, "List of comma separated resources to monitor")
+	flagSet.StringVar(&flags.Resources, "resources", resourcesDefault, "List of comma separated resources to monitor (allowed: cpu, memory)")
 
 	disablePricingDefault := cfg.getBoolValue("disable-pricing", false)
 	flagSet.BoolVar(&flags.DisablePricing, "disable-pricing", disablePricingDefault, "Disable pricing lookups")
@@ -95,6 +95,12 @@ func ParseFlags() (Flags, error) {
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		return Flags{}, err
 	}
+
+	// check flag contain cpu and/or memory
+	if err := validateResources(flags.Resources); err != nil {
+		return Flags{}, err
+	}
+
 	return flags, nil
 }
 
@@ -158,4 +164,24 @@ func loadConfigFile() (configFile, error) {
 		return nil, err
 	}
 	return fileContent, nil
+}
+
+// validateResources ensures that the provided resources are only "cpu" and/or "memory"
+func validateResources(res string) error {
+	valid := map[string]bool{
+		"cpu":    true,
+		"memory": true,
+	}
+
+	// Split for multiple resources
+	for _, r := range strings.Split(res, ",") {
+		r = strings.TrimSpace(r)
+		if r == "" {
+			continue
+		}
+		if !valid[r] {
+			return fmt.Errorf("invalid resource: %q. Allowed resources are: cpu, memory", r)
+		}
+	}
+	return nil
 }
