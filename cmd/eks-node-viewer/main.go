@@ -23,6 +23,7 @@ import (
 	"os"
 	"strings"
 
+	awsSdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	tea "github.com/charmbracelet/bubbletea"
 	"k8s.io/apimachinery/pkg/labels"
@@ -68,7 +69,9 @@ func main() {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
-	pprov := aws.NewStaticPricingProvider()
+	region, profile := client.GetAWSRegionAndProfile(flags.Kubeconfig, flags.Context)
+
+	pprov := aws.NewStaticPricingProvider(region)
 	style, err := model.ParseStyle(flags.Style)
 	if err != nil {
 		log.Fatalf("creating style, %s", err)
@@ -85,7 +88,13 @@ func main() {
 	}
 
 	if !flags.DisablePricing {
-		sess := session.Must(session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}))
+		sess := session.Must(session.NewSessionWithOptions(
+			session.Options{
+				Config:            awsSdk.Config{Region: &region},
+				Profile:           profile,
+				SharedConfigState: session.SharedConfigEnable,
+			},
+		))
 		pprov = aws.NewPricingProvider(ctx, sess)
 	}
 	controller := client.NewController(cs, nodeClaimClient, m, nodeSelector, pprov)

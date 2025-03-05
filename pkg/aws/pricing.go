@@ -128,10 +128,12 @@ func getStaticPrices(region string) map[ec2types.InstanceType]float64 {
 	return InitialOnDemandPricesAWS["us-east-1"]
 }
 
-func NewStaticPricingProvider() nvp.Provider {
-	region := os.Getenv("AWS_REGION")
+func NewStaticPricingProvider(region string) nvp.Provider {
 	if region == "" {
-		region = "us-east-1"
+		region := os.Getenv("AWS_REGION")
+		if region == "" {
+			region = "us-east-1"
+		}
 	}
 
 	return &pricingProvider{
