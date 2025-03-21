@@ -326,6 +326,9 @@ func (n *Node) NotReadyTime() time.Time {
 }
 
 func (n *Node) SetPrice(price float64) {
+	if n.IsAuto() {
+		price = price * 1.12
+	}
 	n.Price = price
 }
 
