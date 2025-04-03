@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go-v2/config"
 	tea "github.com/charmbracelet/bubbletea"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -85,8 +85,12 @@ func main() {
 	}
 
 	if !flags.DisablePricing {
-		sess := session.Must(session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}))
-		pprov = aws.NewPricingProvider(ctx, sess)
+		// Use AWS SDK Go v2 for configuration
+		cfg, err := config.LoadDefaultConfig(ctx, config.WithSharedConfigProfile(""))
+		if err != nil {
+			log.Fatalf("unable to load AWS SDK config: %s", err)
+		}
+		pprov = aws.NewPricingProvider(ctx, cfg)
 	}
 	controller := client.NewController(cs, nodeClaimClient, m, nodeSelector, pprov)
 
