@@ -45,6 +45,7 @@ type pricingProvider struct {
 	mu                      sync.RWMutex
 	onUpdateFuncs           []func()
 	onDemandPrices          map[ec2types.InstanceType]float64
+	autoManagementPrices    map[ec2types.InstanceType]float64
 	spotPrices              map[ec2types.InstanceType]zonalPricing
 	fargateVCPUPricePerHour float64
 	fargateGBPricePerHour   float64
@@ -55,13 +56,23 @@ func (p *pricingProvider) OnUpdate(onUpdate func()) {
 }
 
 func (p *pricingProvider) NodePrice(n *model.Node) (float64, bool) {
+	autoManagementPrice := 0.0
+	if n.IsAuto() {
+		if price, ok := p.AutoManagementPrice(n.InstanceType()); ok {
+			autoManagementPrice = price
+		} else {
+			// don't return a price until we've looked up the management price
+			return 0.0, false
+		}
+	}
+
 	if n.IsOnDemand() {
 		if price, ok := p.OnDemandPrice(n.InstanceType()); ok {
-			return price, true
+			return autoManagementPrice + price, true
 		}
 	} else if n.IsSpot() {
 		if price, ok := p.SpotPrice(n.InstanceType(), n.Zone()); ok {
-			return price, true
+			return autoManagementPrice + price, true
 		}
 	} else if n.IsFargate() && len(n.Pods()) == 1 {
 		cpu, mem, ok := n.Pods()[0].FargateCapacityProvisioned()
@@ -189,6 +200,18 @@ func (p *pricingProvider) OnDemandPrice(instanceType ec2types.InstanceType) (flo
 	return price, true
 }
 
+// AutoManagementPrice returns the EKS Auto Mode management price for the given instance type.
+func (p *pricingProvider) AutoManagementPrice(instanceType ec2types.InstanceType) (float64, bool) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	price, ok := p.autoManagementPrices[instanceType]
+	if !ok {
+		return 0.0, false
+	}
+	return price, true
+}
+
+// FargatePrice returns the last known Fargate price for the given CPU/memory.
 func (p *pricingProvider) FargatePrice(cpu, memory float64) (float64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -237,12 +260,61 @@ func (p *pricingProvider) updatePricing(ctx context.Context) {
 			log.Printf("updating fargate pricing, %s", err)
 		}
 	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := p.updateAutoManagementPricing(ctx); err != nil {
+			log.Printf("updating auto management pricing, %s", err)
+		}
+	}()
 	wg.Wait()
 
 	// notify anyone that cares
 	for _, f := range p.onUpdateFuncs {
 		f()
 	}
+}
+
+func (p *pricingProvider) updateAutoManagementPricing(ctx context.Context) error {
+	if p.pricingClient == nil {
+		return errors.New("pricing client not initialized")
+	}
+	prices := map[ec2types.InstanceType]float64{}
+	filters := []pricingtypes.Filter{
+		{
+			Type:  pricingtypes.FilterTypeTermMatch,
+			Field: aws.String("operation"),
+			Value: aws.String("EKSAutoUsage"),
+		},
+		{
+			Type:  pricingtypes.FilterTypeTermMatch,
+			Field: aws.String("regionCode"),
+			Value: aws.String("us-west-2"),
+		},
+	}
+
+	paginator := pricing.NewGetProductsPaginator(p.pricingClient, &pricing.GetProductsInput{
+		Filters:     filters,
+		ServiceCode: aws.String("AmazonEKS"),
+		MaxResults:  aws.Int32(100),
+	})
+
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			return err
+		}
+		p.processInstancePricingPage(output, prices)
+	}
+	if len(prices) == 0 {
+		log.Printf("No Auto Mode managment prices found")
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.autoManagementPrices = prices
+	return nil
 }
 
 func (p *pricingProvider) updateOnDemandPricing(ctx context.Context) error {
@@ -347,6 +419,7 @@ func (p *pricingProvider) fetchOnDemandPricing(ctx context.Context, additionalFi
 	paginator := pricing.NewGetProductsPaginator(p.pricingClient, &pricing.GetProductsInput{
 		Filters:     filters,
 		ServiceCode: aws.String("AmazonEC2"),
+		MaxResults:  aws.Int32(100),
 	})
 
 	for paginator.HasMorePages() {
@@ -354,7 +427,7 @@ func (p *pricingProvider) fetchOnDemandPricing(ctx context.Context, additionalFi
 		if err != nil {
 			return nil, err
 		}
-		p.processOnDemandPage(output, prices)
+		p.processInstancePricingPage(output, prices)
 	}
 
 	return prices, nil
@@ -363,7 +436,7 @@ func (p *pricingProvider) fetchOnDemandPricing(ctx context.Context, additionalFi
 // turning off cyclo here, it measures as a 12 due to all of the type checks of the pricing data which returns a deeply
 // nested map[string]interface{}
 // nolint: gocyclo
-func (p *pricingProvider) processOnDemandPage(output *pricing.GetProductsOutput, prices map[ec2types.InstanceType]float64) {
+func (p *pricingProvider) processInstancePricingPage(output *pricing.GetProductsOutput, prices map[ec2types.InstanceType]float64) {
 	// this isn't the full pricing struct, just the portions we care about
 	type priceItem struct {
 		Product struct {
@@ -482,6 +555,7 @@ func (p *pricingProvider) updateFargatePricing(ctx context.Context) error {
 	paginator := pricing.NewGetProductsPaginator(p.pricingClient, &pricing.GetProductsInput{
 		Filters:     filters,
 		ServiceCode: aws.String("AmazonEKS"),
+		MaxResults:  aws.Int32(100),
 	})
 
 	for paginator.HasMorePages() {
