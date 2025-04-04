@@ -16,7 +16,7 @@ limitations under the License.
 
 package aws
 
-// generated at 2024-11-05T04:33:42Z for us-east-1
+// generated at 2025-03-31T13:14:23Z for us-east-1
 
 import ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
@@ -95,8 +95,9 @@ var InitialOnDemandPricesAWS = map[string]map[ec2types.InstanceType]float64{
 		"c7gn.8xlarge": 1.996800, "c7gn.large": 0.124800, "c7gn.medium": 0.062400, "c7gn.metal": 3.993600,
 		"c7gn.xlarge": 0.249600,
 		// c7i-flex family
-		"c7i-flex.2xlarge": 0.339150, "c7i-flex.4xlarge": 0.678300, "c7i-flex.8xlarge": 1.356600,
-		"c7i-flex.large": 0.084790, "c7i-flex.xlarge": 0.169580,
+		"c7i-flex.12xlarge": 2.034900, "c7i-flex.16xlarge": 2.713200, "c7i-flex.2xlarge": 0.339150,
+		"c7i-flex.4xlarge": 0.678300, "c7i-flex.8xlarge": 1.356600, "c7i-flex.large": 0.084790,
+		"c7i-flex.xlarge": 0.169580,
 		// c7i family
 		"c7i.12xlarge": 2.142000, "c7i.16xlarge": 2.856000, "c7i.24xlarge": 4.284000, "c7i.2xlarge": 0.357000,
 		"c7i.48xlarge": 8.568000, "c7i.4xlarge": 0.714000, "c7i.8xlarge": 1.428000, "c7i.large": 0.089250,
@@ -118,6 +119,8 @@ var InitialOnDemandPricesAWS = map[string]map[ec2types.InstanceType]float64{
 		"dl1.24xlarge": 13.109040,
 		// f1 family
 		"f1.16xlarge": 13.200000, "f1.2xlarge": 1.650000, "f1.4xlarge": 3.300000,
+		// f2 family
+		"f2.12xlarge": 3.960000, "f2.48xlarge": 15.840000, "f2.6xlarge": 1.980000,
 		// g2 family
 		"g2.2xlarge": 0.650000, "g2.8xlarge": 2.600000,
 		// g3 family
@@ -163,6 +166,14 @@ var InitialOnDemandPricesAWS = map[string]map[ec2types.InstanceType]float64{
 		"i4i.12xlarge": 4.118000, "i4i.16xlarge": 5.491000, "i4i.24xlarge": 8.236800, "i4i.2xlarge": 0.686000,
 		"i4i.32xlarge": 10.982400, "i4i.4xlarge": 1.373000, "i4i.8xlarge": 2.746000, "i4i.large": 0.172000,
 		"i4i.metal": 10.982000, "i4i.xlarge": 0.343000,
+		// i7ie family
+		"i7ie.12xlarge": 6.237600, "i7ie.18xlarge": 9.356400, "i7ie.24xlarge": 12.475200, "i7ie.2xlarge": 1.039600,
+		"i7ie.3xlarge": 1.559400, "i7ie.48xlarge": 24.950400, "i7ie.6xlarge": 3.118800, "i7ie.large": 0.259900,
+		"i7ie.xlarge": 0.519800,
+		// i8g family
+		"i8g.12xlarge": 4.118400, "i8g.16xlarge": 5.491200, "i8g.24xlarge": 8.236800, "i8g.2xlarge": 0.686400,
+		"i8g.48xlarge": 16.473600, "i8g.4xlarge": 1.372800, "i8g.8xlarge": 2.745600, "i8g.large": 0.171600,
+		"i8g.metal-24xl": 9.060480, "i8g.xlarge": 0.343200,
 		// im4gn family
 		"im4gn.16xlarge": 5.820670, "im4gn.2xlarge": 0.727580, "im4gn.4xlarge": 1.455170, "im4gn.8xlarge": 2.910340,
 		"im4gn.large": 0.181900, "im4gn.xlarge": 0.363790,
@@ -248,8 +259,9 @@ var InitialOnDemandPricesAWS = map[string]map[ec2types.InstanceType]float64{
 		"m7gd.8xlarge": 1.708600, "m7gd.large": 0.106800, "m7gd.medium": 0.053400, "m7gd.metal": 3.417100,
 		"m7gd.xlarge": 0.213600,
 		// m7i-flex family
-		"m7i-flex.2xlarge": 0.383040, "m7i-flex.4xlarge": 0.766080, "m7i-flex.8xlarge": 1.532160,
-		"m7i-flex.large": 0.095760, "m7i-flex.xlarge": 0.191520,
+		"m7i-flex.12xlarge": 2.298240, "m7i-flex.16xlarge": 3.064320, "m7i-flex.2xlarge": 0.383040,
+		"m7i-flex.4xlarge": 0.766080, "m7i-flex.8xlarge": 1.532160, "m7i-flex.large": 0.095760,
+		"m7i-flex.xlarge": 0.191520,
 		// m7i family
 		"m7i.12xlarge": 2.419200, "m7i.16xlarge": 3.225600, "m7i.24xlarge": 4.838400, "m7i.2xlarge": 0.403200,
 		"m7i.48xlarge": 9.676800, "m7i.4xlarge": 0.806400, "m7i.8xlarge": 1.612800, "m7i.large": 0.100800,
@@ -270,6 +282,8 @@ var InitialOnDemandPricesAWS = map[string]map[ec2types.InstanceType]float64{
 		"p4de.24xlarge": 40.965750,
 		// p5 family
 		"p5.48xlarge": 98.320000,
+		// p5en family
+		"p5en.48xlarge": 84.800000,
 		// r3 family
 		"r3.2xlarge": 0.665000, "r3.4xlarge": 1.330000, "r3.8xlarge": 2.660000, "r3.large": 0.166000,
 		"r3.xlarge": 0.333000,
@@ -385,13 +399,17 @@ var InitialOnDemandPricesAWS = map[string]map[ec2types.InstanceType]float64{
 		// u-9tb1 family
 		"u-9tb1.112xlarge": 81.900000,
 		// u7i-12tb family
-		"u7i-12tb.224xlarge": 152.880000,
+		"u7i-12tb.224xlarge": 135.227750,
+		// u7i-6tb family
+		"u7i-6tb.112xlarge": 62.790000,
+		// u7i-8tb family
+		"u7i-8tb.112xlarge": 83.720000,
 		// u7in-16tb family
-		"u7in-16tb.224xlarge": 203.840000,
+		"u7in-16tb.224xlarge": 180.475580,
 		// u7in-24tb family
-		"u7in-24tb.224xlarge": 305.760000,
+		"u7in-24tb.224xlarge": 270.731280,
 		// u7in-32tb family
-		"u7in-32tb.224xlarge": 407.680000,
+		"u7in-32tb.224xlarge": 360.986950,
 		// vt1 family
 		"vt1.24xlarge": 5.200000, "vt1.3xlarge": 0.650000, "vt1.6xlarge": 1.300000,
 		// x1 family
