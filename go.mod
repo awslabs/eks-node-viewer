@@ -16,7 +16,7 @@ require (
 	go.uber.org/multierr v1.11.0
 	golang.org/x/text v0.23.0
 	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.32.2
+	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.2
 	sigs.k8s.io/karpenter v1.3.2
 )
