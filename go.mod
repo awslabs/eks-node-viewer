@@ -1,6 +1,7 @@
 module github.com/awslabs/eks-node-viewer
 
-go 1.24.0
+go 1.24.2
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
