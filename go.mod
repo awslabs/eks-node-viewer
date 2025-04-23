@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.211.3
 	github.com/aws/aws-sdk-go-v2/service/pricing v1.34.3
-	github.com/charmbracelet/bubbles v0.20.0
+	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
