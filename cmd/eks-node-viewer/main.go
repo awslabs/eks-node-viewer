@@ -58,6 +58,15 @@ func main() {
 		os.Exit(0)
 	}
 
+	resources := strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' })
+	if flags.NormalizedAllocation {
+		for _, res := range resources {
+			if res != "cpu" && res != "memory" {
+				log.Fatalf("normalized allocation only supports cpu and memory, got %s", res)
+			}
+		}
+	}
+
 	cs, err := client.NewKubernetes(flags.Kubeconfig, flags.Context)
 	if err != nil {
 		log.Fatalf("creating client, %s", err)
@@ -73,9 +82,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("creating style, %s", err)
 	}
-	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style)
+	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style, flags.NormalizedAllocation)
 	m.DisablePricing = flags.DisablePricing
-	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
+	m.SetResources(resources)
 
 	var nodeSelector labels.Selector
 	if ns, err := labels.Parse(flags.NodeSelector); err != nil {
