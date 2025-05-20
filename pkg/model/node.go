@@ -16,6 +16,7 @@ package model
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"regexp"
 	"sync"
 	"time"
@@ -182,6 +183,55 @@ func (n *Node) Used() v1.ResourceList {
 		used[rn] = q.DeepCopy()
 	}
 	return used
+}
+
+func (n *Node) UsedNormalized(normalizedAllocation bool) v1.ResourceList {
+	used := n.Used()
+	if !normalizedAllocation {
+		return used
+	}
+	allocatable := n.Allocatable()
+	pctCpu := n.UsedPct(v1.ResourceCPU, false)
+	pctMem := n.UsedPct(v1.ResourceMemory, false)
+	if pctCpu > pctMem {
+		allocatableRes := allocatable[v1.ResourceMemory]
+		newMem := allocatableRes.AsApproximateFloat64() * pctCpu
+		used[v1.ResourceMemory] = resource.NewMilliQuantity(int64(newMem*1000), resource.DecimalSI).DeepCopy()
+	} else if pctMem > pctCpu {
+		allocatableRes := allocatable[v1.ResourceCPU]
+		newCpu := allocatableRes.AsApproximateFloat64() * pctMem
+		used[v1.ResourceCPU] = resource.NewMilliQuantity(int64(newCpu*1000), resource.DecimalSI).DeepCopy()
+	}
+	return used
+}
+
+func (n *Node) UsedPct(res v1.ResourceName, normalizedAllocation bool) float64 {
+	used := n.Used()
+	allocatable := n.Allocatable()
+
+	usedRes := used[res]
+	allocatableRes := allocatable[res]
+	pct := usedRes.AsApproximateFloat64() / allocatableRes.AsApproximateFloat64()
+	if allocatableRes.AsApproximateFloat64() == 0 {
+		pct = 0
+	} else if normalizedAllocation {
+		var resRev v1.ResourceName
+		switch res {
+		case v1.ResourceCPU:
+			resRev = v1.ResourceMemory
+		case v1.ResourceMemory:
+			resRev = v1.ResourceCPU
+		}
+		if resRev != "" {
+			pctRev := n.UsedPct(resRev, false)
+			if pctRev > pct {
+				newUsedRes := allocatableRes.AsApproximateFloat64() * pctRev
+				pct = newUsedRes / allocatableRes.AsApproximateFloat64()
+			}
+		}
+	}
+
+	return pct
 }
 
 func (n *Node) Cordoned() bool {
