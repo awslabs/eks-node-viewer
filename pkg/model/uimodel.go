@@ -44,29 +44,31 @@ var (
 )
 
 type UIModel struct {
-	progress       progress.Model
-	cluster        *Cluster
-	extraLabels    []string
-	paginator      paginator.Model
-	height         int
-	nodeSorter     func(lhs, rhs *Node) bool
-	style          *Style
-	DisablePricing bool
+	progress             progress.Model
+	cluster              *Cluster
+	extraLabels          []string
+	paginator            paginator.Model
+	height               int
+	nodeSorter           func(lhs, rhs *Node) bool
+	style                *Style
+	DisablePricing       bool
+	normalizedAllocation bool
 }
 
-func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
+func NewUIModel(extraLabels []string, nodeSort string, style *Style, normalizedAllocation bool) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
 	pager.InactiveDot = inactiveDot
 	return &UIModel{
 		// red to green
-		progress:    progress.New(style.gradient),
-		cluster:     NewCluster(),
-		extraLabels: extraLabels,
-		paginator:   pager,
-		nodeSorter:  makeNodeSorter(nodeSort),
-		style:       style,
+		progress:             progress.New(style.gradient),
+		cluster:              NewCluster(normalizedAllocation),
+		extraLabels:          extraLabels,
+		paginator:            pager,
+		nodeSorter:           makeNodeSorter(nodeSort),
+		style:                style,
+		normalizedAllocation: normalizedAllocation,
 	}
 }
 
@@ -126,8 +128,6 @@ func (u *UIModel) View() string {
 }
 
 func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName) {
-	allocatable := n.Allocatable()
-	used := n.Used()
 	firstLine := true
 	resNameLen := 0
 	for _, res := range resources {
@@ -136,11 +136,11 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 		}
 	}
 	for _, res := range resources {
-		usedRes := used[res]
-		allocatableRes := allocatable[res]
-		pct := usedRes.AsApproximateFloat64() / allocatableRes.AsApproximateFloat64()
-		if allocatableRes.AsApproximateFloat64() == 0 {
-			pct = 0
+		pct := n.UsedPct(res, u.normalizedAllocation)
+
+		resStr := res
+		if u.normalizedAllocation {
+			resStr = res + " (normalized)"
 		}
 
 		if firstLine {
@@ -148,7 +148,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			if !n.HasPrice() || u.DisablePricing {
 				priceLabel = ""
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
+			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), resStr, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
 
 			// node compute type
 			if n.IsOnDemand() {
@@ -193,7 +193,7 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			}
 
 		} else {
-			fmt.Fprintf(w, " \t%s\t%s\t\t\t\t\t", res, u.progress.ViewAs(pct))
+			fmt.Fprintf(w, " \t%s\t%s\t\t\t\t\t", resStr, u.progress.ViewAs(pct))
 			for range u.extraLabels {
 				fmt.Fprintf(w, "\t")
 			}
@@ -221,6 +221,10 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		} else {
 			pctUsedStr = u.style.red(pctUsedStr)
 		}
+		resStr := res
+		if u.normalizedAllocation {
+			resStr = res + " (normalized)"
+		}
 
 		u.progress.ShowPercentage = false
 		monthlyPrice := stats.TotalPrice * (365 * 24) / 12 // average hours per month
@@ -232,10 +236,10 @@ func (u *UIModel) writeClusterSummary(resources []v1.ResourceName, stats Stats, 
 		}
 		if firstLine {
 			enPrinter.Fprintf(w, "%d nodes\t(%10s/%s)\t%s\t%s\t%s\t%s\n",
-				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
+				stats.NumNodes, used.String(), allocatable.String(), pctUsedStr, resStr, u.progress.ViewAs(pctUsed/100.0), clusterPrice)
 		} else {
 			enPrinter.Fprintf(w, " \t%s/%s\t%s\t%s\t%s\t\n",
-				used.String(), allocatable.String(), pctUsedStr, res, u.progress.ViewAs(pctUsed/100.0))
+				used.String(), allocatable.String(), pctUsedStr, resStr, u.progress.ViewAs(pctUsed/100.0))
 		}
 		firstLine = false
 	}

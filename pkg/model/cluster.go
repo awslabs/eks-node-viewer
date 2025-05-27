@@ -21,17 +21,19 @@ import (
 )
 
 type Cluster struct {
-	mu        sync.RWMutex
-	nodes     map[string]*Node
-	pods      map[objectKey]*Pod
-	resources []v1.ResourceName
+	mu                   sync.RWMutex
+	nodes                map[string]*Node
+	pods                 map[objectKey]*Pod
+	resources            []v1.ResourceName
+	normalizedAllocation bool
 }
 
-func NewCluster() *Cluster {
+func NewCluster(normalizedAllocation bool) *Cluster {
 	return &Cluster{
-		nodes:     map[string]*Node{},
-		pods:      map[objectKey]*Pod{},
-		resources: []v1.ResourceName{v1.ResourceCPU},
+		nodes:                map[string]*Node{},
+		pods:                 map[objectKey]*Pod{},
+		resources:            []v1.ResourceName{v1.ResourceCPU},
+		normalizedAllocation: normalizedAllocation,
 	}
 }
 func (c *Cluster) AddNode(node *Node) *Node {
@@ -165,7 +167,7 @@ func (c *Cluster) Stats() Stats {
 		st.NumNodes++
 		st.Nodes = append(st.Nodes, n)
 		addResources(st.AllocatableResources, n.Allocatable())
-		addResources(st.UsedResources, n.Used())
+		addResources(st.UsedResources, n.UsedNormalized(c.normalizedAllocation))
 	}
 	return st
 }
