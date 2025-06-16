@@ -14,6 +14,8 @@ limitations under the License.
 package model_test
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
+	"reflect"
 	"testing"
 	"time"
 
@@ -184,6 +186,127 @@ func TestNodeNotReadyNoCondition(t *testing.T) {
 
 			if node.NotReadyTime() != notReadyTime {
 				t.Errorf("expected not ready time = %s, got %s", notReadyTime, node.NotReadyTime())
+			}
+		})
+	}
+}
+
+func TestNode_UsedPct(t *testing.T) {
+	type args struct {
+		res                  v1.ResourceName
+		normalizedAllocation bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "cpu used",
+			args: args{
+				res: v1.ResourceCPU,
+			},
+			want: 0.25,
+		},
+		{
+			name: "memory used",
+			args: args{
+				res: v1.ResourceMemory,
+			},
+			want: 0.50,
+		},
+		{
+			name: "cpu used normalized",
+			args: args{
+				res:                  v1.ResourceCPU,
+				normalizedAllocation: true,
+			},
+			want: 0.50,
+		},
+		{
+			name: "memory used normalized",
+			args: args{
+				res:                  v1.ResourceMemory,
+				normalizedAllocation: true,
+			},
+			want: 0.50,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			n := testNode("mynode")
+			n.Status.Allocatable = v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("8"),
+				v1.ResourceMemory: resource.MustParse("4Gi"),
+			}
+			node := model.NewNode(n)
+
+			p := testPod("default", "mypod")
+			p.Spec.NodeName = n.Name
+			pod := model.NewPod(p)
+			node.BindPod(pod)
+
+			if got := node.UsedPct(tt.args.res, tt.args.normalizedAllocation); got != tt.want {
+				t.Errorf("UsedPct() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNode_UsedNormalized(t *testing.T) {
+	type args struct {
+		normalizedAllocation bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want v1.ResourceList
+	}{
+		{
+			name: "not normalized",
+			args: args{},
+			want: v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("2"),
+				v1.ResourceMemory: resource.MustParse("2Gi"),
+				v1.ResourcePods:   resource.MustParse("1"),
+			},
+		},
+		{
+			name: "normalized",
+			args: args{
+				normalizedAllocation: true,
+			},
+			want: v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("4000m"),
+				v1.ResourceMemory: resource.MustParse("2Gi"),
+				v1.ResourcePods:   resource.MustParse("1"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			n := testNode("mynode")
+			n.Status.Allocatable = v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("8"),
+				v1.ResourceMemory: resource.MustParse("4Gi"),
+			}
+			node := model.NewNode(n)
+
+			p := testPod("default", "mypod")
+			p.Spec.NodeName = n.Name
+			pod := model.NewPod(p)
+			node.BindPod(pod)
+
+			// remove the string notation from the resource so
+			// reflect.DeepEqual can work
+			want := v1.ResourceList{}
+			for k, v := range tt.want {
+				v.Add(resource.MustParse("0"))
+				want[k] = v
+			}
+
+			if got := node.UsedNormalized(tt.args.normalizedAllocation); !reflect.DeepEqual(got, want) {
+				t.Errorf("UsedNormalized() = %v, want %v", got, tt.want)
 			}
 		})
 	}
