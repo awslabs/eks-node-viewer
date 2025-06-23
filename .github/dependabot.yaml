@@ -1,6 +1,15 @@
+# yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
 version: 2
 updates:
   - package-ecosystem: "gomod"
     directory: "/"
+    groups:
+      k8s-dependencies:
+        patterns:
+        - "k8s.io*"
+        - "sigs.k8s.io/*"
+      aws-dependencies:
+        patterns:
+        - "github.com/aws*"
     schedule:
       interval: "weekly"
