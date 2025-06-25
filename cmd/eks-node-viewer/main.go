@@ -75,7 +75,14 @@ func main() {
 		log.Fatalf("creating style, %s", err)
 	}
 
-	out, err := exec.Command("kubectl", "config", "view", "--minify", "-o", "jsonpath='{.clusters[].name}'").Output()
+	kubeconfig := ""
+	if flags.Kubeconfig != "" {
+		kubeconfig = flags.Kubeconfig
+	} else {
+		kubeconfig = "~/.kube/config"
+	}
+
+	out, err := exec.Command("kubectl", "config", "current-context", "--kubeconfig", kubeconfig).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
