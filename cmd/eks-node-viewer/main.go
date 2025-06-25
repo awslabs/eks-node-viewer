@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -73,7 +74,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("creating style, %s", err)
 	}
-	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style)
+
+	out, err := exec.Command("kubectl", "config", "view", "--minify", "-o", "jsonpath='{.clusters[].name}'").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style, string(out))
 	m.DisablePricing = flags.DisablePricing
 	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
