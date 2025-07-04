@@ -25,13 +25,15 @@ type Cluster struct {
 	nodes     map[string]*Node
 	pods      map[objectKey]*Pod
 	resources []v1.ResourceName
+	name      string
 }
 
-func NewCluster() *Cluster {
+func NewCluster(context string) *Cluster {
 	return &Cluster{
 		nodes:     map[string]*Node{},
 		pods:      map[objectKey]*Pod{},
 		resources: []v1.ResourceName{v1.ResourceCPU},
+		name:      context,
 	}
 }
 func (c *Cluster) AddNode(node *Node) *Node {
