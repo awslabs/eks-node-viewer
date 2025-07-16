@@ -148,7 +148,8 @@ func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceNam
 			if !n.HasPrice() || u.DisablePricing {
 				priceLabel = ""
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t(%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), n.InstanceType(), priceLabel)
+			maxPods, _ := allocatable.Pods().AsInt64()
+			fmt.Fprintf(w, "%s\t%s\t%s\t(%d/%d pods)\t%s%s", n.Name(), res, u.progress.ViewAs(pct), n.NumPods(), maxPods, n.InstanceType(), priceLabel)
 
 			// node compute type
 			if n.IsOnDemand() {
