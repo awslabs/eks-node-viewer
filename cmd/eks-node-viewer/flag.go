@@ -41,16 +41,17 @@ func init() {
 }
 
 type Flags struct {
-	Context         string
-	NodeSelector    string
-	ExtraLabels     string
-	NodeSort        string
-	Style           string
-	Kubeconfig      string
-	Resources       string
-	DisablePricing  bool
-	ShowAttribution bool
-	Version         bool
+	Context              string
+	NodeSelector         string
+	ExtraLabels          string
+	NodeSort             string
+	Style                string
+	Kubeconfig           string
+	Resources            string
+	DisablePricing       bool
+	ShowAttribution      bool
+	NormalizedAllocation bool
+	Version              bool
 }
 
 func ParseFlags() (Flags, error) {
@@ -91,6 +92,8 @@ func ParseFlags() (Flags, error) {
 	flagSet.BoolVar(&flags.DisablePricing, "disable-pricing", disablePricingDefault, "Disable pricing lookups")
 
 	flagSet.BoolVar(&flags.ShowAttribution, "attribution", false, "Show the Open Source Attribution")
+
+	flagSet.BoolVar(&flags.NormalizedAllocation, "normalized-allocation", false, "Normalize the node allocation based on the higher allocated dimension among CPU and Memory")
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		return Flags{}, err
