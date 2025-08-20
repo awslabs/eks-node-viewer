@@ -54,7 +54,7 @@ type UIModel struct {
 	DisablePricing bool
 }
 
-func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
+func NewUIModel(extraLabels []string, nodeSort string, style *Style, context string) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
@@ -62,7 +62,7 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
 	return &UIModel{
 		// red to green
 		progress:    progress.New(style.gradient),
-		cluster:     NewCluster(),
+		cluster:     NewCluster(context),
 		extraLabels: extraLabels,
 		paginator:   pager,
 		nodeSorter:  makeNodeSorter(nodeSort),
@@ -88,6 +88,10 @@ func (u *UIModel) View() string {
 	})
 
 	ctw := text.NewColorTabWriter(&b, 0, 8, 1)
+
+	fmt.Fprintln(&b, "Viewing cluster: ", u.cluster.name)
+	fmt.Fprintln(&b)
+
 	u.writeClusterSummary(u.cluster.resources, stats, ctw)
 	ctw.Flush()
 	u.progress.ShowPercentage = true
@@ -122,6 +126,7 @@ func (u *UIModel) View() string {
 
 	fmt.Fprintln(&b, u.paginator.View())
 	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+
 	return b.String()
 }
 
