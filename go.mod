@@ -1,6 +1,6 @@
 module github.com/awslabs/eks-node-viewer
 
-go 1.25.0
+go 1.25.5
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
@@ -16,7 +16,7 @@ require (
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v0.35.0
-	sigs.k8s.io/karpenter v1.8.0
+	sigs.k8s.io/karpenter v1.8.2
 )
 
 require (
