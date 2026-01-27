@@ -78,12 +78,14 @@ func NewNodeFromNodeClaim(nc *karpv1.NodeClaim) *Node {
 
 func (n *Node) IsOnDemand() bool {
 	return n.node.Labels["karpenter.sh/capacity-type"] == "on-demand" ||
-		n.node.Labels["eks.amazonaws.com/capacityType"] == "ON_DEMAND"
+		n.node.Labels["eks.amazonaws.com/capacityType"] == "ON_DEMAND" ||
+		n.node.Labels["spotinst.io/node-lifecycle"] == "od"
 }
 
 func (n *Node) IsSpot() bool {
 	return n.node.Labels["karpenter.sh/capacity-type"] == "spot" ||
-		n.node.Labels["eks.amazonaws.com/capacityType"] == "SPOT"
+		n.node.Labels["eks.amazonaws.com/capacityType"] == "SPOT" ||
+		n.node.Labels["spotinst.io/node-lifecycle"] == "spot"
 }
 
 func (n *Node) IsFargate() bool {
