@@ -22,6 +22,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	helperResource "k8s.io/component-helpers/resource"
 )
 
 // Pod is our pod model used for internal storage and display
@@ -85,24 +86,10 @@ func (p *Pod) Phase() v1.PodPhase {
 func (p *Pod) Requested() v1.ResourceList {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	requested := v1.ResourceList{}
-	for _, c := range p.pod.Spec.InitContainers {
-		if c.RestartPolicy == nil || *c.RestartPolicy != v1.ContainerRestartPolicyAlways {
-			continue
-		}
-		for rn, q := range c.Resources.Requests {
-			existing := requested[rn]
-			existing.Add(q)
-			requested[rn] = existing
-		}
-	}
-	for _, c := range p.pod.Spec.Containers {
-		for rn, q := range c.Resources.Requests {
-			existing := requested[rn]
-			existing.Add(q)
-			requested[rn] = existing
-		}
-	}
+	requested := helperResource.PodRequests(&p.pod, helperResource.PodResourcesOptions{
+		SkipPodLevelResources:       false,
+		SkipContainerLevelResources: false,
+	})
 	requested[v1.ResourcePods] = resource.MustParse("1")
 	return requested
 }
