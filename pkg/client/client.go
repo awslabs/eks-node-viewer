@@ -17,6 +17,7 @@ package client
 import (
 	"strings"
 
+	resourcev1 "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -50,6 +51,26 @@ func NewNodeClaims(kubeconfig, context string) (*rest.RESTClient, error) {
 	scheme.Scheme.AddKnownTypes(gv,
 		&karpv1.NodeClaim{},
 		&karpv1.NodeClaimList{})
+
+	config := *c
+	config.ContentConfig.GroupVersion = &gv
+	config.APIPath = "/apis"
+	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+
+	return rest.RESTClientFor(&config)
+}
+
+func NewResourceClaims(kubeconfig, context string) (*rest.RESTClient, error) {
+	c, err := getConfig(kubeconfig, context)
+	if err != nil {
+		return nil, err
+	}
+
+	gv := schema.GroupVersion{Group: "resource.k8s.io", Version: "v1"}
+	scheme.Scheme.AddKnownTypes(gv,
+		&resourcev1.ResourceClaim{},
+		&resourcev1.ResourceClaimList{})
 
 	config := *c
 	config.ContentConfig.GroupVersion = &gv

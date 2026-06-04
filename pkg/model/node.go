@@ -22,6 +22,7 @@ import (
 
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	v1 "k8s.io/api/core/v1"
+	k8sresource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/duration"
 	karpv1 "sigs.k8s.io/karpenter/pkg/apis/v1"
@@ -41,15 +42,19 @@ type Node struct {
 	node                  v1.Node
 	pods                  map[objectKey]*Pod
 	used                  v1.ResourceList
+	draUsed               map[string]int64 // resource name -> count of devices allocated via DRA
+	draClaims             map[string]map[string]int64 // claimUID -> resource name -> device count
 	Price                 float64
 	nodeclaimCreationTime time.Time
 }
 
 func NewNode(n *v1.Node) *Node {
 	node := &Node{
-		node: *n,
-		pods: map[objectKey]*Pod{},
-		used: v1.ResourceList{},
+		node:      *n,
+		pods:      map[objectKey]*Pod{},
+		used:      v1.ResourceList{},
+		draUsed:   map[string]int64{},
+		draClaims: map[string]map[string]int64{},
 	}
 
 	return node
@@ -181,6 +186,14 @@ func (n *Node) Used() v1.ResourceList {
 	for rn, q := range n.used {
 		used[rn] = q.DeepCopy()
 	}
+	// Merge DRA device allocations into the used resource list
+	for res, count := range n.draUsed {
+		if count > 0 {
+			existing := used[v1.ResourceName(res)]
+			existing.Add(k8sresource.MustParse(fmt.Sprintf("%d", count)))
+			used[v1.ResourceName(res)] = existing
+		}
+	}
 	return used
 }
 
@@ -287,6 +300,45 @@ func (n *Node) Pods() []*Pod {
 func (n *Node) HasPrice() bool {
 	// we use NaN for an unknown price, so if this is true the price is known
 	return n.Price == n.Price
+}
+
+// AddDRAClaim records DRA device allocations for a claim on this node.
+func (n *Node) AddDRAClaim(claimUID string, resourceCounts map[string]int64) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	// Remove old counts if this claim was already tracked
+	if old, ok := n.draClaims[claimUID]; ok {
+		for res, count := range old {
+			n.draUsed[res] -= count
+		}
+	}
+	n.draClaims[claimUID] = resourceCounts
+	for res, count := range resourceCounts {
+		n.draUsed[res] += count
+	}
+}
+
+// DeleteDRAClaim removes DRA device allocations for a claim from this node.
+func (n *Node) DeleteDRAClaim(claimUID string) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	if old, ok := n.draClaims[claimUID]; ok {
+		for res, count := range old {
+			n.draUsed[res] -= count
+		}
+		delete(n.draClaims, claimUID)
+	}
+}
+
+// DRAUsed returns the DRA device allocation counts.
+func (n *Node) DRAUsed() map[string]int64 {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	result := make(map[string]int64, len(n.draUsed))
+	for k, v := range n.draUsed {
+		result[k] = v
+	}
+	return result
 }
 
 var resourceLabelRe = regexp.MustCompile("eks-node-viewer/node-(.*?)-usage")

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+	resourcev1 "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -33,20 +34,22 @@ import (
 )
 
 type Controller struct {
-	kubeClient      *kubernetes.Clientset
-	uiModel         *model.UIModel
-	pricing         pricing.Provider
-	nodeSelector    labels.Selector
-	nodeClaimClient *rest.RESTClient
+	kubeClient           *kubernetes.Clientset
+	uiModel              *model.UIModel
+	pricing              pricing.Provider
+	nodeSelector         labels.Selector
+	nodeClaimClient      *rest.RESTClient
+	resourceClaimClient  *rest.RESTClient
 }
 
-func NewController(kubeClient *kubernetes.Clientset, nodeClaimClient *rest.RESTClient, uiModel *model.UIModel, nodeSelector labels.Selector, pricing pricing.Provider) *Controller {
+func NewController(kubeClient *kubernetes.Clientset, nodeClaimClient *rest.RESTClient, resourceClaimClient *rest.RESTClient, uiModel *model.UIModel, nodeSelector labels.Selector, pricing pricing.Provider) *Controller {
 	c := &Controller{
-		kubeClient:      kubeClient,
-		uiModel:         uiModel,
-		pricing:         pricing,
-		nodeSelector:    nodeSelector,
-		nodeClaimClient: nodeClaimClient,
+		kubeClient:          kubeClient,
+		uiModel:            uiModel,
+		pricing:            pricing,
+		nodeSelector:       nodeSelector,
+		nodeClaimClient:    nodeClaimClient,
+		resourceClaimClient: resourceClaimClient,
 	}
 	pricing.OnUpdate(c.RefreshNodePrices)
 	return c
@@ -61,6 +64,13 @@ func (m Controller) Start(ctx context.Context) {
 	// If a NodeClaims Get returns an error, then don't startup the nodeclaims controller since the CRD is not registered
 	if err := m.nodeClaimClient.Get().Do(ctx).Error(); err == nil {
 		m.startNodeClaimWatch(ctx, cluster)
+	}
+
+	// If ResourceClaims API is available, watch for DRA allocations
+	if m.resourceClaimClient != nil {
+		if err := m.resourceClaimClient.Get().Do(ctx).Error(); err == nil {
+			m.startResourceClaimWatch(ctx, cluster)
+		}
 	}
 }
 
@@ -189,6 +199,73 @@ func (m Controller) startPodWatch(ctx context.Context, cluster *model.Cluster) {
 		},
 	)
 	go podController.Run(ctx.Done())
+}
+
+func (m Controller) startResourceClaimWatch(ctx context.Context, cluster *model.Cluster) {
+	resourceClaimWatchList := cache.NewListWatchFromClient(m.resourceClaimClient, "resourceclaims",
+		v1.NamespaceAll, fields.Everything())
+	_, resourceClaimController := cache.NewInformer(
+		resourceClaimWatchList,
+		&resourcev1.ResourceClaim{},
+		time.Second*0,
+		cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				m.handleResourceClaim(cluster, obj.(*resourcev1.ResourceClaim))
+			},
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				m.handleResourceClaim(cluster, newObj.(*resourcev1.ResourceClaim))
+			},
+			DeleteFunc: func(obj interface{}) {
+				claim := ignoreDeletedFinalStateUnknown(obj).(*resourcev1.ResourceClaim)
+				m.handleResourceClaimDelete(cluster, claim)
+			},
+		},
+	)
+	go resourceClaimController.Run(ctx.Done())
+}
+
+// draDriverToResource maps DRA driver names to allocatable resource names.
+var draDriverToResource = map[string]string{
+	"neuron.aws.com": "aws.amazon.com/neuron",
+}
+
+// handleResourceClaim processes an allocated ResourceClaim and updates node DRA usage.
+func (m Controller) handleResourceClaim(cluster *model.Cluster, claim *resourcev1.ResourceClaim) {
+	if claim.Status.Allocation == nil {
+		return
+	}
+
+	// Group allocated devices by node (pool name) and resource name
+	nodeDeviceCounts := map[string]map[string]int64{} // nodeName -> resourceName -> count
+	for _, result := range claim.Status.Allocation.Devices.Results {
+		nodeName := result.Pool
+		if nodeName == "" {
+			continue
+		}
+		resourceName := result.Driver
+		if mapped, ok := draDriverToResource[result.Driver]; ok {
+			resourceName = mapped
+		}
+		if nodeDeviceCounts[nodeName] == nil {
+			nodeDeviceCounts[nodeName] = map[string]int64{}
+		}
+		nodeDeviceCounts[nodeName][resourceName]++
+	}
+
+	claimUID := string(claim.UID)
+	for nodeName, resourceCounts := range nodeDeviceCounts {
+		if node, ok := cluster.GetNodeByName(nodeName); ok {
+			node.AddDRAClaim(claimUID, resourceCounts)
+		}
+	}
+}
+
+// handleResourceClaimDelete removes DRA device allocations when a claim is deleted.
+func (m Controller) handleResourceClaimDelete(cluster *model.Cluster, claim *resourcev1.ResourceClaim) {
+	claimUID := string(claim.UID)
+	cluster.ForEachNode(func(n *model.Node) {
+		n.DeleteDRAClaim(claimUID)
+	})
 }
 
 func (m Controller) updatePrice(node *model.Node) {
