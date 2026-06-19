@@ -42,6 +42,7 @@ func init() {
 
 type Flags struct {
 	Context         string
+	Profile         string
 	NodeSelector    string
 	ExtraLabels     string
 	NodeSort        string
@@ -67,6 +68,9 @@ func ParseFlags() (Flags, error) {
 
 	contextDefault := cfg.getValue("context", "")
 	flagSet.StringVar(&flags.Context, "context", contextDefault, "Name of the kubernetes context to use")
+
+	profileDefault := cfg.getValue("profile", "")
+	flagSet.StringVar(&flags.Profile, "profile", profileDefault, "AWS profile to use for pricing API calls. If empty, the standard AWS credential chain is used (AWS_PROFILE, shared config, etc.)")
 
 	nodeSelectorDefault := cfg.getValue("node-selector", "")
 	flagSet.StringVar(&flags.NodeSelector, "node-selector", nodeSelectorDefault, "Node label selector used to filter nodes, if empty all nodes are selected ")

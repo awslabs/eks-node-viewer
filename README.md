@@ -47,6 +47,8 @@ Usage of ./eks-node-viewer:
     	Node label selector used to filter nodes, if empty all nodes are selected
   -node-sort string
     	Sort order for the nodes, either 'creation' or a label name. The sort order can be controlled by appending =asc or =dsc to the value. (default "creation")
+  -profile string
+    	AWS profile to use for pricing API calls. If empty, the standard AWS credential chain is used (AWS_PROFILE, shared config, etc.)
   -resources string
     	List of comma separated resources to monitor (default "cpu")
   -style string
@@ -69,7 +71,9 @@ eks-node-viewer --extra-labels topology.kubernetes.io/zone
 # Sort by CPU usage in descending order
 eks-node-viewer --node-sort=eks-node-viewer/node-cpu-usage=dsc
 # Specify a particular AWS profile and region
-AWS_PROFILE=myprofile AWS_REGION=us-west-2
+AWS_PROFILE=myprofile AWS_REGION=us-west-2 eks-node-viewer
+# Or pass the AWS profile directly (useful with AWS SSO / IAM Identity Center)
+eks-node-viewer --profile myprofile
 ```
 
 ### Computed Labels
@@ -109,6 +113,16 @@ style=#2E91D2,#ffff00,#D55E00
 This CLI relies on AWS credentials to access pricing data if you don't use the `--disable-pricing` option. You must have credentials configured via `~/aws/credentials`, `~/.aws/config`, environment variables, or some other credential provider chain.
 
 See [credential provider documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) for more.
+
+#### no EC2 IMDS role found / failed to refresh cached credentials
+
+If pricing fails with errors like `get credentials: failed to refresh cached credentials, no EC2 IMDS role found` while `kubectl` works fine, the AWS SDK isn't resolving the same credentials your kubeconfig uses. This is common with AWS SSO / IAM Identity Center, where the active profile must be selected explicitly. Point the tool at the right profile with either:
+
+```shell
+eks-node-viewer --profile myprofile
+# or
+AWS_PROFILE=myprofile eks-node-viewer
+```
 
 #### I get an error of `creating client, exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1"`
 

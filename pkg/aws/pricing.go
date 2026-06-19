@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/pricing"
@@ -105,23 +104,28 @@ func newZonalPricing(defaultPrice float64) zonalPricing {
 // pricingUpdatePeriod is how often we try to update our pricing information after the initial update on startup
 const pricingUpdatePeriod = 12 * time.Hour
 
-// NewPricingClient returns a pricing client configured based on a particular region
-func NewPricingClient(ctx context.Context, region string) (*pricing.Client, error) {
-	// pricing API doesn't have an endpoint in all regions
-	pricingAPIRegion := "us-east-1"
-	if strings.HasPrefix(region, "ap-") {
-		pricingAPIRegion = "ap-south-1"
-	} else if strings.HasPrefix(region, "cn-") {
-		pricingAPIRegion = "cn-northwest-1"
-	} else if strings.HasPrefix(region, "eu-") {
-		pricingAPIRegion = "eu-central-1"
+// pricingAPIRegion maps an arbitrary AWS region to a region where the pricing
+// API has an endpoint, since it isn't available in every region.
+func pricingAPIRegion(region string) string {
+	switch {
+	case strings.HasPrefix(region, "ap-"):
+		return "ap-south-1"
+	case strings.HasPrefix(region, "cn-"):
+		return "cn-northwest-1"
+	case strings.HasPrefix(region, "eu-"):
+		return "eu-central-1"
+	default:
+		return "us-east-1"
 	}
+}
 
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(pricingAPIRegion))
-	if err != nil {
-		return nil, err
-	}
-	return pricing.NewFromConfig(cfg), nil
+// NewPricingClient returns a pricing client that reuses the credentials already
+// resolved in cfg (so a configured profile or SSO session is honored), and only
+// overrides the region to one where the pricing API is available.
+func NewPricingClient(cfg aws.Config) *pricing.Client {
+	pricingCfg := cfg.Copy()
+	pricingCfg.Region = pricingAPIRegion(cfg.Region)
+	return pricing.NewFromConfig(pricingCfg)
 }
 
 var allPrices = []map[string]map[ec2types.InstanceType]float64{
@@ -158,11 +162,7 @@ func NewPricingProvider(ctx context.Context, cfg aws.Config) nvp.Provider {
 	}
 
 	ec2Client := ec2.NewFromConfig(cfg)
-	pricingClient, err := NewPricingClient(ctx, region)
-	if err != nil {
-		log.Printf("Failed to create pricing client: %v", err)
-		pricingClient = nil
-	}
+	pricingClient := NewPricingClient(cfg)
 
 	p := &pricingProvider{
 		region:         region,

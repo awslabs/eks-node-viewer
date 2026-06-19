@@ -85,8 +85,14 @@ func main() {
 	}
 
 	if !flags.DisablePricing {
-		// Use AWS SDK Go v2 for configuration
-		cfg, err := config.LoadDefaultConfig(ctx, config.WithSharedConfigProfile(""))
+		// Use AWS SDK Go v2 for configuration. When --profile is set it takes
+		// precedence; otherwise the standard credential chain is used
+		// (AWS_PROFILE env var, shared config, etc.).
+		var loadOpts []func(*config.LoadOptions) error
+		if flags.Profile != "" {
+			loadOpts = append(loadOpts, config.WithSharedConfigProfile(flags.Profile))
+		}
+		cfg, err := config.LoadDefaultConfig(ctx, loadOpts...)
 		if err != nil {
 			log.Fatalf("unable to load AWS SDK config: %s", err)
 		}
