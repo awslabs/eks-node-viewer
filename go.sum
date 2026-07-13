@@ -36,8 +36,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.43.3 h1:VrIhKRCSK1umelSgB9RghvA9RTUY
 github.com/aws/aws-sdk-go-v2/service/sts v1.43.3/go.mod h1:r8wkDOuLaaMFqFiYAb8dGY2A3gJCOujMc6CFOVC4Zhc=
 github.com/aws/smithy-go v1.27.1 h1:4T340VFndXtADGF52gYa1POyL7s9E4Z1OeZ1hCscIw8=
 github.com/aws/smithy-go v1.27.1/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
-github.com/awslabs/operatorpkg v0.0.0-20260501204335-c49b4ca8d58d h1:9mmEijoinfobWnkvs9nGiy+Wvsms31+Ng3O2Nn83JIE=
-github.com/awslabs/operatorpkg v0.0.0-20260501204335-c49b4ca8d58d/go.mod h1:G/D6aERpu0RWYGZC8wrAfrtEI6nWHAQIkXmTGnNn2jM=
+github.com/awslabs/operatorpkg v0.0.0-20260708223819-4da4c353c5fa h1:SM2D/TaMO79MaSpBvRLm2Ed/SKbGCxuckRJBDDCGUck=
+github.com/awslabs/operatorpkg v0.0.0-20260708223819-4da4c353c5fa/go.mod h1:G/D6aERpu0RWYGZC8wrAfrtEI6nWHAQIkXmTGnNn2jM=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
@@ -282,8 +282,8 @@ sigs.k8s.io/controller-runtime v0.24.0 h1:Ck6N2LdS8Lovy1o25BB4r1xjvLEKUl1s2o9kU+
 sigs.k8s.io/controller-runtime v0.24.0/go.mod h1:vFkfY5fGt5xAC/sKb8IBFKgWPNKG9OUG29dR8Y2wImw=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 h1:IpInykpT6ceI+QxKBbEflcR5EXP7sU1kvOlxwZh5txg=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730/go.mod h1:mdzfpAEoE6DHQEN0uh9ZbOCuHbLK5wOm7dK4ctXE9Tg=
-sigs.k8s.io/karpenter v1.13.0 h1:7/ZergHciATEZ/hubSe9S2fB4iYWcRZqrWIItupUjVM=
-sigs.k8s.io/karpenter v1.13.0/go.mod h1:tvcSVkvYItUKfbfzHXpgfL7Zl1M93dwheaqXyuMHqoQ=
+sigs.k8s.io/karpenter v1.14.0 h1:+SXlqYNb9FIKRpDgPPRnphVmWbrWLw4tgzKezr372Mc=
+sigs.k8s.io/karpenter v1.14.0/go.mod h1:rrYIUdQk4UvFnjcm1/b3yNSTf1oJCDD4fdmkkMNda14=
 sigs.k8s.io/randfill v1.0.0 h1:JfjMILfT8A6RbawdsK2JXGBR5AQVfd+9TbzrlneTyrU=
 sigs.k8s.io/randfill v1.0.0/go.mod h1:XeLlZ/jmk4i1HRopwe7/aU3H5n1zNUcX6TM94b3QxOY=
 sigs.k8s.io/structured-merge-diff/v6 v6.3.2 h1:kwVWMx5yS1CrnFWA/2QHyRVJ8jM6dBA80uLmm0wJkk8=
