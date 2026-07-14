@@ -39,7 +39,7 @@ func TestNewNode(t *testing.T) {
 	n := testNode("mynode")
 	node := model.NewNode(n)
 	if exp, got := "mynode", node.Name(); exp != got {
-		t.Errorf("expeted Name == %s, got %s", exp, got)
+		t.Errorf("expected Name == %s, got %s", exp, got)
 	}
 }
 
@@ -47,10 +47,10 @@ func TestNodeTypeUnknown(t *testing.T) {
 	n := testNode("mynode")
 	node := model.NewNode(n)
 	if node.IsOnDemand() {
-		t.Errorf("exepcted to not be on-demand")
+		t.Errorf("expected to not be on-demand")
 	}
 	if node.IsSpot() {
-		t.Errorf("exepcted to not be spot")
+		t.Errorf("expected to not be spot")
 	}
 }
 
@@ -58,6 +58,7 @@ func TestNodeTypeOnDemand(t *testing.T) {
 	for label, value := range map[string]string{
 		"karpenter.sh/capacity-type":     "on-demand",
 		"eks.amazonaws.com/capacityType": "ON_DEMAND",
+		"spotinst.io/node-lifecycle":     "od",
 	} {
 		n := testNode("mynode")
 		n.Labels = map[string]string{
@@ -65,13 +66,13 @@ func TestNodeTypeOnDemand(t *testing.T) {
 		}
 		node := model.NewNode(n)
 		if !node.IsOnDemand() {
-			t.Errorf("exepcted on-demand")
+			t.Errorf("expected on-demand")
 		}
 		if node.IsSpot() {
-			t.Errorf("exepcted to not be spot")
+			t.Errorf("expected to not be spot")
 		}
 		if node.IsFargate() {
-			t.Errorf("exepcted to not be fargate")
+			t.Errorf("expected to not be fargate")
 		}
 	}
 }
@@ -80,6 +81,7 @@ func TestNodeTypeSpot(t *testing.T) {
 	for label, value := range map[string]string{
 		"karpenter.sh/capacity-type":     "spot",
 		"eks.amazonaws.com/capacityType": "SPOT",
+		"spotinst.io/node-lifecycle":     "spot",
 	} {
 		n := testNode("mynode")
 		n.Labels = map[string]string{
@@ -87,13 +89,13 @@ func TestNodeTypeSpot(t *testing.T) {
 		}
 		node := model.NewNode(n)
 		if node.IsOnDemand() {
-			t.Errorf("exepcted to not be on-demand")
+			t.Errorf("expected to not be on-demand")
 		}
 		if !node.IsSpot() {
-			t.Errorf("exepcted to be spot")
+			t.Errorf("expected to be spot")
 		}
 		if node.IsFargate() {
-			t.Errorf("exepcted to not be fargate")
+			t.Errorf("expected to not be fargate")
 		}
 	}
 }
@@ -108,13 +110,13 @@ func TestNodeTypeFargate(t *testing.T) {
 		}
 		node := model.NewNode(n)
 		if node.IsOnDemand() {
-			t.Errorf("exepcted to not be on-demand")
+			t.Errorf("expected to not be on-demand")
 		}
 		if node.IsSpot() {
-			t.Errorf("exepcted to not be spot")
+			t.Errorf("expected to not be spot")
 		}
 		if !node.IsFargate() {
-			t.Errorf("exepcted to be fargate")
+			t.Errorf("expected to be fargate")
 		}
 	}
 }
@@ -129,16 +131,16 @@ func TestNodeTypeAuto(t *testing.T) {
 		}
 		node := model.NewNode(n)
 		if node.IsOnDemand() {
-			t.Errorf("exepcted to not be on-demand")
+			t.Errorf("expected to not be on-demand")
 		}
 		if node.IsSpot() {
-			t.Errorf("exepcted to not be spot")
+			t.Errorf("expected to not be spot")
 		}
 		if node.IsFargate() {
-			t.Errorf("exepcted to not be fargate")
+			t.Errorf("expected to not be fargate")
 		}
 		if !node.IsAuto() {
-			t.Errorf("exepcted to be auto")
+			t.Errorf("expected to be auto")
 		}
 	}
 }
