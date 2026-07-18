@@ -9,7 +9,7 @@ TEST_PKGS=./pkg/... ./cmd/...
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-20s\033[0m %s\n", $$1, $$2}'
 
-build: generate ## Build
+build: ## Build (uses committed generated files; run `make generate` to refresh them)
 	go build -ldflags="-s -w -X main.version=local -X main.builtBy=Makefile" ./cmd/eks-node-viewer
 
 goreleaser: ## Release snapshot
