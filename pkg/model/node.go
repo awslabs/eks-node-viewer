@@ -36,6 +36,13 @@ type objectKey struct {
 	namespace string
 	name      string
 }
+
+// draSliceAlloc records the device capacity a single DRA ResourceSlice
+// advertises: which allocatable resource name it maps to and how many devices.
+type draSliceAlloc struct {
+	resourceName string
+	count        int64
+}
 type Node struct {
 	mu                    sync.RWMutex
 	visible               bool
@@ -44,6 +51,7 @@ type Node struct {
 	used                  v1.ResourceList
 	draUsed               map[string]int64 // resource name -> count of devices allocated via DRA
 	draClaims             map[string]map[string]int64 // claimUID -> resource name -> device count
+	draSlices             map[string]draSliceAlloc // ResourceSlice name -> advertised DRA device capacity
 	Price                 float64
 	nodeclaimCreationTime time.Time
 }
@@ -52,9 +60,10 @@ func NewNode(n *v1.Node) *Node {
 	node := &Node{
 		node:      *n,
 		pods:      map[objectKey]*Pod{},
-		used:      v1.ResourceList{},
-		draUsed:   map[string]int64{},
-		draClaims: map[string]map[string]int64{},
+		used:           v1.ResourceList{},
+		draUsed:        map[string]int64{},
+		draClaims:      map[string]map[string]int64{},
+		draSlices:      map[string]draSliceAlloc{},
 	}
 
 	return node
@@ -175,8 +184,25 @@ func (n *Node) DeletePod(namespace string, name string) {
 func (n *Node) Allocatable() v1.ResourceList {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
-	// shouldn't be modified so it's safe to return
-	return n.node.Status.Allocatable
+	// Fast path: no DRA-advertised capacity, return the node's allocatable as-is.
+	if len(n.draSlices) == 0 {
+		// shouldn't be modified so it's safe to return
+		return n.node.Status.Allocatable
+	}
+	// Merge DRA device capacity (e.g. Neuron on trn3, advertised only via
+	// ResourceSlices) into the allocatable list so it shows as the denominator.
+	allocatable := v1.ResourceList{}
+	for rn, q := range n.node.Status.Allocatable {
+		allocatable[rn] = q.DeepCopy()
+	}
+	for _, slice := range n.draSlices {
+		if slice.count > 0 {
+			existing := allocatable[v1.ResourceName(slice.resourceName)]
+			existing.Add(k8sresource.MustParse(fmt.Sprintf("%d", slice.count)))
+			allocatable[v1.ResourceName(slice.resourceName)] = existing
+		}
+	}
+	return allocatable
 }
 
 func (n *Node) Used() v1.ResourceList {
@@ -328,6 +354,24 @@ func (n *Node) DeleteDRAClaim(claimUID string) {
 		}
 		delete(n.draClaims, claimUID)
 	}
+}
+
+// SetDRASlice records the DRA device capacity advertised by a single
+// ResourceSlice (identified by sliceName) for this node. This capacity is
+// merged into Allocatable so DRA-only resources (e.g. Neuron on trn3, which is
+// not present in node.Status.Allocatable) have a usable denominator. A node may
+// have multiple slices per driver; each is tracked independently by name.
+func (n *Node) SetDRASlice(sliceName, resourceName string, count int64) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.draSlices[sliceName] = draSliceAlloc{resourceName: resourceName, count: count}
+}
+
+// DeleteDRASlice removes the DRA device capacity advertised by a ResourceSlice.
+func (n *Node) DeleteDRASlice(sliceName string) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	delete(n.draSlices, sliceName)
 }
 
 // DRAUsed returns the DRA device allocation counts.

@@ -70,6 +70,9 @@ func (m Controller) Start(ctx context.Context) {
 	if m.resourceClaimClient != nil {
 		if err := m.resourceClaimClient.Get().Do(ctx).Error(); err == nil {
 			m.startResourceClaimWatch(ctx, cluster)
+			// ResourceSlices advertise DRA device capacity (e.g. Neuron on trn3,
+			// which is not reported in node.Status.Allocatable).
+			m.startResourceSliceWatch(ctx, cluster)
 		}
 	}
 }
@@ -224,9 +227,62 @@ func (m Controller) startResourceClaimWatch(ctx context.Context, cluster *model.
 	go resourceClaimController.Run(ctx.Done())
 }
 
+func (m Controller) startResourceSliceWatch(ctx context.Context, cluster *model.Cluster) {
+	resourceSliceWatchList := cache.NewListWatchFromClient(m.resourceClaimClient, "resourceslices",
+		v1.NamespaceAll, fields.Everything())
+	_, resourceSliceController := cache.NewInformer(
+		resourceSliceWatchList,
+		&resourcev1.ResourceSlice{},
+		time.Second*0,
+		cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				m.handleResourceSlice(cluster, obj.(*resourcev1.ResourceSlice))
+			},
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				m.handleResourceSlice(cluster, newObj.(*resourcev1.ResourceSlice))
+			},
+			DeleteFunc: func(obj interface{}) {
+				slice := ignoreDeletedFinalStateUnknown(obj).(*resourcev1.ResourceSlice)
+				m.handleResourceSliceDelete(cluster, slice)
+			},
+		},
+	)
+	go resourceSliceController.Run(ctx.Done())
+}
+
 // draDriverToResource maps DRA driver names to allocatable resource names.
 var draDriverToResource = map[string]string{
 	"neuron.aws.com": "aws.amazon.com/neuron",
+}
+
+// handleResourceSlice records the DRA device capacity a slice advertises for
+// its node, so DRA-only resources (e.g. Neuron on trn3) have a denominator.
+func (m Controller) handleResourceSlice(cluster *model.Cluster, slice *resourcev1.ResourceSlice) {
+	if slice.Spec.NodeName == nil || *slice.Spec.NodeName == "" {
+		return
+	}
+	node, ok := cluster.GetNodeByName(*slice.Spec.NodeName)
+	if !ok {
+		return
+	}
+
+	// Only map drivers we know how to surface; ignore others (e.g. dra.net).
+	resourceName, known := draDriverToResource[slice.Spec.Driver]
+	if !known {
+		return
+	}
+
+	node.SetDRASlice(slice.Name, resourceName, int64(len(slice.Spec.Devices)))
+}
+
+// handleResourceSliceDelete removes the DRA device capacity a slice advertised.
+func (m Controller) handleResourceSliceDelete(cluster *model.Cluster, slice *resourcev1.ResourceSlice) {
+	if slice.Spec.NodeName == nil || *slice.Spec.NodeName == "" {
+		return
+	}
+	if node, ok := cluster.GetNodeByName(*slice.Spec.NodeName); ok {
+		node.DeleteDRASlice(slice.Name)
+	}
 }
 
 // handleResourceClaim processes an allocated ResourceClaim and updates node DRA usage.

@@ -70,7 +70,9 @@ func NewResourceClaims(kubeconfig, context string) (*rest.RESTClient, error) {
 	gv := schema.GroupVersion{Group: "resource.k8s.io", Version: "v1"}
 	scheme.Scheme.AddKnownTypes(gv,
 		&resourcev1.ResourceClaim{},
-		&resourcev1.ResourceClaimList{})
+		&resourcev1.ResourceClaimList{},
+		&resourcev1.ResourceSlice{},
+		&resourcev1.ResourceSliceList{})
 
 	config := *c
 	config.ContentConfig.GroupVersion = &gv

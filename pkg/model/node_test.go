@@ -188,3 +188,45 @@ func TestNodeNotReadyNoCondition(t *testing.T) {
 		})
 	}
 }
+
+const neuronResource = "aws.amazon.com/neuron"
+
+// On trn3, Neuron capacity is advertised only via DRA ResourceSlices, not in
+// node.Status.Allocatable. SetDRASlice must surface it through Allocatable.
+func TestNodeDRAAllocatableFromSlice(t *testing.T) {
+	node := model.NewNode(testNode("trn3-node"))
+
+	if q := node.Allocatable()[neuronResource]; !q.IsZero() {
+		t.Fatalf("expected no neuron allocatable before slice, got %s", q.String())
+	}
+
+	node.SetDRASlice("slice-a", neuronResource, 16)
+
+	q := node.Allocatable()[neuronResource]
+	if got := q.Value(); got != 16 {
+		t.Errorf("expected 16 neuron devices allocatable, got %d", got)
+	}
+}
+
+// Multiple slices for the same resource on one node must sum.
+func TestNodeDRAAllocatableMultipleSlices(t *testing.T) {
+	node := model.NewNode(testNode("trn3-node"))
+	node.SetDRASlice("slice-a", neuronResource, 16)
+	node.SetDRASlice("slice-b", neuronResource, 8)
+
+	q := node.Allocatable()[neuronResource]
+	if got := q.Value(); got != 24 {
+		t.Errorf("expected 24 neuron devices allocatable, got %d", got)
+	}
+}
+
+// Deleting a slice must remove its advertised capacity.
+func TestNodeDRAAllocatableDeleteSlice(t *testing.T) {
+	node := model.NewNode(testNode("trn3-node"))
+	node.SetDRASlice("slice-a", neuronResource, 16)
+	node.DeleteDRASlice("slice-a")
+
+	if q := node.Allocatable()[neuronResource]; !q.IsZero() {
+		t.Errorf("expected no neuron allocatable after delete, got %s", q.String())
+	}
+}
