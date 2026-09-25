@@ -102,6 +102,30 @@ node-sort=creation=asc
 style=#2E91D2,#ffff00,#D55E00
 ```
 
+### IAM Permissions
+
+`eks-node-viewer` reads node and pod data through the Kubernetes API (using your kubeconfig), so it needs no EKS or STS API permissions for that. It only calls AWS for pricing data, which requires:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "pricing:GetProducts",
+        "ec2:DescribeSpotPriceHistory"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+`pricing:GetProducts` is used for on-demand and Fargate pricing, and `ec2:DescribeSpotPriceHistory` for spot pricing. Neither action supports resource-level scoping, so `Resource` is `*`.
+
+If you run with `--disable-pricing`, no AWS permissions are needed at all.
+
 ### Troubleshooting
 
 #### NoCredentialProviders: no valid providers in chain. Deprecated.
