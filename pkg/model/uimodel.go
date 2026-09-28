@@ -55,6 +55,7 @@ type UIModel struct {
 	nodeSorter  *nodeSorter
 	style       *Style
 	groupBy     string
+	showGroups  bool
 	showNodes   bool
 	// printer formats numbers with commas, built once as the view is redrawn often
 	printer        *message.Printer
@@ -117,10 +118,30 @@ func (u *UIModel) Cluster() *Cluster {
 }
 
 // SetGrouping summarizes nodes by their value for the label, empty to disable.
-// groupsOnly starts with the node list hidden, which the 'g' key toggles.
+// groupsOnly starts with the node list hidden. Both sections can be toggled at
+// runtime, the summary with 'g' and the node list with 'n'.
 func (u *UIModel) SetGrouping(label string, groupsOnly bool) {
 	u.groupBy = label
-	u.showNodes = u.groupBy == "" || !groupsOnly
+	u.showGroups = label != ""
+	u.showNodes = label == "" || !groupsOnly
+}
+
+// toggleGroups and toggleNodes never leave both sections hidden, there would be
+// nothing left to look at.
+func (u *UIModel) toggleGroups() {
+	if u.groupBy == "" || (u.showGroups && !u.showNodes) {
+		return
+	}
+	u.showGroups = !u.showGroups
+	u.paginator.Page = 0
+}
+
+func (u *UIModel) toggleNodes() {
+	if u.showNodes && !u.showGroups {
+		return
+	}
+	u.showNodes = !u.showNodes
+	u.paginator.Page = 0
 }
 
 func (u *UIModel) Init() tea.Cmd {
@@ -148,7 +169,7 @@ func (u *UIModel) View() string {
 		return b.String()
 	}
 
-	if u.groupBy != "" {
+	if u.showGroups && u.groupBy != "" {
 		groups := GroupNodes(stats.Nodes, u.groupBy)
 		fmt.Fprintln(&b)
 		if u.showNodes {
@@ -203,10 +224,14 @@ func (u *UIModel) helpText() string {
 	if u.groupBy == "" {
 		return "←/→ page • q: quit"
 	}
-	if u.showNodes {
-		return "←/→ page • g: hide nodes • q: quit"
+	groups, nodes := "hide", "hide"
+	if !u.showGroups {
+		groups = "show"
 	}
-	return "←/→ page • g: show nodes • q: quit"
+	if !u.showNodes {
+		nodes = "show"
+	}
+	return fmt.Sprintf("←/→ page • g: %s groups • n: %s nodes • q: quit", groups, nodes)
 }
 
 func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName) {
@@ -400,11 +425,10 @@ func (u *UIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "esc", "ctrl+c":
 			return u, tea.Quit
 		case "g":
-			// without grouping there would be nothing left on screen
-			if u.groupBy != "" {
-				u.showNodes = !u.showNodes
-				u.paginator.Page = 0
-			}
+			u.toggleGroups()
+			return u, nil
+		case "n":
+			u.toggleNodes()
 			return u, nil
 		}
 	case tickMsg:

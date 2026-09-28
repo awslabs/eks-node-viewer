@@ -62,11 +62,15 @@ Usage of ./eks-node-viewer:
 
 ### Keys
 
-| Key   | Action                                                       |
-|-------|--------------------------------------------------------------|
-| `←/→` | Page through the node list (or the group list with `g`)      |
-| `g`   | Toggle the node list on and off when `--group-by` is in use  |
-| `q`   | Quit                                                         |
+| Key   | Action                                                        |
+|-------|---------------------------------------------------------------|
+| `←/→` | Page through whichever list is on screen                      |
+| `g`   | Toggle the `--group-by` summary                               |
+| `n`   | Toggle the node list                                          |
+| `q`   | Quit                                                          |
+
+`g` and `n` never leave both sections hidden. With a lot of groups the summary can fill the
+screen, so hiding one of the two is the way to read the other.
 o
 ### Examples
 ```shell
@@ -129,8 +133,10 @@ A few notes:
 - Nodes without the label are collected into a `<none>` group, which always sorts last.
 - A cost prefixed with `>=` means at least one node in the group has an unknown price, so the real
   cost is higher than the number shown. A group with no known price at all shows no cost.
-- Add `--groups-only` to drop the per-node list and keep just the summary. Press `g` to bring the
-  nodes back without restarting.
+- Add `--groups-only` to start with the per-node list hidden. Either section can be toggled at
+  runtime without restarting: `g` for the summary and `n` for the node list. On a cluster with
+  many groups the summary fills the screen, so hiding it with `g` is how you get back to
+  reading node by node.
 
 ### Computed Labels
 
