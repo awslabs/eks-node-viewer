@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	tea "github.com/charmbracelet/bubbletea"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 
 	"github.com/awslabs/eks-node-viewer/pkg/aws"
 	"github.com/awslabs/eks-node-viewer/pkg/client"
@@ -76,12 +77,17 @@ func main() {
 	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style)
 	m.DisablePricing = flags.DisablePricing
 	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
+	if flags.GroupBy != "" {
+		groupBy, err := parseLabelFilter(flags.GroupBy)
+		if err != nil {
+			log.Fatalf("parsing group-by: %s", err)
+		}
+		m.SetGrouping(groupBy.label, flags.GroupsOnly)
+	}
 
-	var nodeSelector labels.Selector
-	if ns, err := labels.Parse(flags.NodeSelector); err != nil {
-		log.Fatalf("parsing node selector: %s", err)
-	} else {
-		nodeSelector = ns
+	nodeSelector, err := buildNodeSelector(flags.NodeSelector, flags.GroupBy)
+	if err != nil {
+		log.Fatalf("%s", err)
 	}
 
 	if !flags.DisablePricing {
@@ -100,4 +106,51 @@ func main() {
 		log.Fatalf("error running tea: %s", err)
 	}
 	cancel()
+}
+
+// labelFilter is a --group-by value: 'label' or 'label=a,b,c'.
+type labelFilter struct {
+	label  string
+	values []string
+}
+
+func parseLabelFilter(s string) (labelFilter, error) {
+	label, rawValues, _ := strings.Cut(s, "=")
+	filter := labelFilter{label: strings.TrimSpace(label)}
+	if filter.label == "" {
+		return labelFilter{}, fmt.Errorf("parsing %q: no label name given", s)
+	}
+	for _, v := range strings.Split(rawValues, ",") {
+		if v = strings.TrimSpace(v); v != "" {
+			filter.values = append(filter.values, v)
+		}
+	}
+	return filter, nil
+}
+
+// buildNodeSelector combines --node-selector with the values listed in --group-by.
+// A --group-by without values only says how to aggregate and leaves the selection
+// alone, keeping nodes without the label visible in their own group.
+func buildNodeSelector(nodeSelector string, groupBy string) (labels.Selector, error) {
+	selector, err := labels.Parse(nodeSelector)
+	if err != nil {
+		return nil, fmt.Errorf("parsing node selector: %w", err)
+	}
+	if strings.TrimSpace(groupBy) == "" {
+		return selector, nil
+	}
+
+	filter, err := parseLabelFilter(groupBy)
+	if err != nil {
+		return nil, err
+	}
+	if len(filter.values) == 0 {
+		return selector, nil
+	}
+
+	req, err := labels.NewRequirement(filter.label, selection.In, filter.values)
+	if err != nil {
+		return nil, fmt.Errorf("building selector for label %q: %w", filter.label, err)
+	}
+	return selector.Add(*req), nil
 }

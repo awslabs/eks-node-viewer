@@ -138,19 +138,30 @@ func (c *Cluster) Stats() Stats {
 		UsedResources:        v1.ResourceList{},
 		PercentUsedResoruces: map[v1.ResourceName]float64{},
 		PodsByPhase:          map[v1.PodPhase]int{},
+		Nodes:                make([]*Node, 0, len(c.nodes)),
+	}
+
+	// we watch every pod but display only some nodes, and nodes are keyed by
+	// provider ID, which is not what a pod is bound by
+	visibleNodeNames := map[string]struct{}{}
+	for _, n := range c.nodes {
+		if name := n.RegisteredName(); name != "" && n.Visible() {
+			visibleNodeNames[name] = struct{}{}
+		}
 	}
 
 	for _, p := range c.pods {
-		// skip pods bound to non-visible nodes
-		if n, ok := c.nodes[p.NodeName()]; ok && !n.Visible() {
-			continue
+		// skip pods on nodes we aren't displaying. Unscheduled pods belong to no
+		// node and are always counted: they are capacity still needed
+		if nodeName := p.NodeName(); nodeName != "" {
+			if _, ok := visibleNodeNames[nodeName]; !ok {
+				continue
+			}
+			st.BoundPodCount++
 		}
 
 		st.TotalPods++
 		st.PodsByPhase[p.Phase()]++
-		if p.NodeName() != "" {
-			st.BoundPodCount++
-		}
 	}
 
 	for _, n := range c.nodes {
@@ -164,8 +175,8 @@ func (c *Cluster) Stats() Stats {
 		}
 		st.NumNodes++
 		st.Nodes = append(st.Nodes, n)
-		addResources(st.AllocatableResources, n.Allocatable())
-		addResources(st.UsedResources, n.Used())
+		n.AddAllocatableTo(st.AllocatableResources)
+		n.AddUsedTo(st.UsedResources)
 	}
 	return st
 }

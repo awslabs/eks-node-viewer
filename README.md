@@ -41,6 +41,10 @@ Usage of ./eks-node-viewer:
     	Disable pricing lookups
   -extra-labels string
     	A comma separated set of extra node labels to display
+  -group-by string
+    	Node label to summarize usage and cost by, optionally restricted to a comma separated list of its values, e.g. 'karpenter.sh/nodepool' or 'karpenter.sh/nodepool=default,gpu'. If empty no summary is displayed
+  -groups-only
+    	Hide the individual node list and only display the --group-by summary. Toggled at runtime with 'g'
   -kubeconfig string
     	Absolute path to the kubeconfig file (default "~/.kube/config")
   -node-selector string
@@ -56,6 +60,18 @@ Usage of ./eks-node-viewer:
     	Display eks-node-viewer version
 ```
 
+### Keys
+
+| Key   | Action                                                        |
+|-------|---------------------------------------------------------------|
+| `←/→` | Page through whichever list is on screen                      |
+| `g`   | Toggle the `--group-by` summary                               |
+| `n`   | Toggle the node list                                          |
+| `q`   | Quit                                                          |
+
+`g` and `n` never leave both sections hidden. With a lot of groups the summary can fill the
+screen, so hiding one of the two is the way to read the other.
+o
 ### Examples
 ```shell
 # Standard usage
@@ -68,9 +84,59 @@ eks-node-viewer --resources cpu,memory
 eks-node-viewer --extra-labels topology.kubernetes.io/zone
 # Sort by CPU usage in descending order
 eks-node-viewer --node-sort=eks-node-viewer/node-cpu-usage=dsc
+# Cost and usage per nodepool, without the per-node detail
+eks-node-viewer --group-by karpenter.sh/nodepool --groups-only
+# Cost and usage per team, using your own node label
+eks-node-viewer --group-by company.com/team
+# A few nodepools at once, instead of one terminal per nodepool
+eks-node-viewer --group-by karpenter.sh/nodepool=default,gpu,spot
 # Specify a particular AWS profile and region
 AWS_PROFILE=myprofile AWS_REGION=us-west-2
 ```
+
+### Grouping By Label
+
+`--group-by` adds a summary block that aggregates every node sharing a value for the given label.
+Each group shows its node count, pod count, resource requests vs allocatable, the percentage in use
+and the cost, which answers questions like "how much is this nodepool costing me" or "how much are
+the nodes belonging to this team costing me":
+
+```shell
+eks-node-viewer --group-by karpenter.sh/nodepool
+```
+
+```text
+6 nodes  (   98304Mi/377176Mi)  26.1% memory  ██████████░░░░░░░░░░░░  $4.608/hour | $3,363.840/month
+48 pods (0 pending 48 running 48 bound)
+
+default  4 nodes  32 pods  (65536Mi/251451Mi)  26.1% memory  ██████████░░░░░░░░░░░░  $3.072/hour | $2,242.560/month
+gpu      2 nodes  16 pods  (32768Mi/125725Mi)  26.1% memory  ██████████░░░░░░░░░░░░  $1.536/hour | $1,121.280/month
+```
+
+Appending a comma separated list of values restricts the view to them, so a single flag both picks
+the nodepools to watch and breaks the cost down by them, replacing a terminal per nodepool:
+
+```shell
+eks-node-viewer --group-by karpenter.sh/nodepool=default,gpu
+```
+
+A few notes:
+
+- The label is any node label, written out in full. Grouping by team, zone, instance type or
+  capacity type is the same flag with a different key.
+- Values are optional. A bare `--group-by` label only says how to aggregate and leaves the node
+  selection alone, which keeps the nodes that don't carry the label visible. `--node-selector` is
+  still the flag to use to filter on a label other than the one being grouped by.
+- The percentage is the usage of the group as a whole, so it is weighted by node size rather than
+  being the plain average of each node's percentage. It also covers every resource passed to
+  `--resources`.
+- Nodes without the label are collected into a `<none>` group, which always sorts last.
+- A cost prefixed with `>=` means at least one node in the group has an unknown price, so the real
+  cost is higher than the number shown. A group with no known price at all shows no cost.
+- Add `--groups-only` to start with the per-node list hidden. Either section can be toggled at
+  runtime without restarting: `g` for the summary and `n` for the node list. On a cluster with
+  many groups the summary fills the screen, so hiding it with `g` is how you get back to
+  reading node by node.
 
 ### Computed Labels
 
@@ -94,6 +160,12 @@ resources=cpu,memory
 
 # show the zone and nodepool name by default
 extra-labels=topology.kubernetes.io/zone,karpenter.sh/nodepool
+
+# summarize cost and usage per nodepool, optionally only for some of them
+group-by=karpenter.sh/nodepool
+
+# and start with the node list hidden
+groups-only=true
 
 # sort so that the newest nodes are first
 node-sort=creation=asc

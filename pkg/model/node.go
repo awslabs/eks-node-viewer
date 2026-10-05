@@ -113,6 +113,14 @@ func (n *Node) Name() string {
 	return n.node.Name
 }
 
+// RegisteredName is the node's name in the API server, empty for a node we only
+// know from its NodeClaim. Unlike Name it doesn't fall back to the instance ID.
+func (n *Node) RegisteredName() string {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	return n.node.Name
+}
+
 func (n *Node) ProviderID() string {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
@@ -182,6 +190,21 @@ func (n *Node) Used() v1.ResourceList {
 		used[rn] = q.DeepCopy()
 	}
 	return used
+}
+
+// AddUsedTo sums the node's pod requests into list, skipping the copy that Used
+// has to make to protect our state.
+func (n *Node) AddUsedTo(list v1.ResourceList) {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	addResources(list, n.used)
+}
+
+// AddAllocatableTo sums the node's allocatable resources into list.
+func (n *Node) AddAllocatableTo(list v1.ResourceList) {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	addResources(list, n.node.Status.Allocatable)
 }
 
 func (n *Node) Cordoned() bool {
@@ -287,6 +310,22 @@ func (n *Node) Pods() []*Pod {
 func (n *Node) HasPrice() bool {
 	// we use NaN for an unknown price, so if this is true the price is known
 	return n.Price == n.Price
+}
+
+// LabelValue is the node's value for the label, falling back to a computed label
+// and then to UngroupedValue.
+func (n *Node) LabelValue(label string) string {
+	n.mu.RLock()
+	value, ok := n.node.Labels[label]
+	n.mu.RUnlock()
+	if ok && value != "" {
+		return value
+	}
+	// ComputeLabel locks, so it can't be called while holding the lock
+	if computed := n.ComputeLabel(label); computed != "-" {
+		return computed
+	}
+	return UngroupedValue
 }
 
 var resourceLabelRe = regexp.MustCompile("eks-node-viewer/node-(.*?)-usage")

@@ -14,6 +14,7 @@ limitations under the License.
 package model_test
 
 import (
+	"fmt"
 	"testing"
 
 	v1 "k8s.io/api/core/v1"
@@ -208,4 +209,70 @@ func TestClusterDeleteNodeDeletesPods(t *testing.T) {
 		t.Errorf("expected 0 CPU used, got %s", got.String())
 	}
 
+}
+
+// pods are watched cluster wide while nodes can be filtered, so the counts have to
+// leave out the pods running somewhere we aren't displaying
+func TestClusterStatsCountsOnlyPodsOnVisibleNodes(t *testing.T) {
+	cluster := model.NewCluster()
+
+	for _, name := range []string{"node-a", "node-b"} {
+		n := testNode(name)
+		n.Spec.ProviderID = "aws:///us-west-2a/i-" + name
+		node := model.NewNode(n)
+		node.Show()
+		cluster.AddNode(node)
+	}
+
+	addPod := func(name, nodeName string, phase v1.PodPhase) {
+		p := testPod("default", name)
+		p.Spec.NodeName = nodeName
+		p.Status.Phase = phase
+		cluster.AddPod(model.NewPod(p))
+	}
+
+	// on the nodes we are displaying
+	addPod("mine-1", "node-a", v1.PodRunning)
+	addPod("mine-2", "node-a", v1.PodRunning)
+	addPod("mine-3", "node-b", v1.PodRunning)
+	// on a node that the node selector filtered out, so we never saw the node
+	for i := 0; i < 5; i++ {
+		addPod(fmt.Sprintf("other-%d", i), "node-not-watched", v1.PodRunning)
+	}
+	// not scheduled anywhere yet, so they belong to no node
+	addPod("pending-1", "", v1.PodPending)
+	addPod("pending-2", "", v1.PodPending)
+
+	st := cluster.Stats()
+	if got := st.BoundPodCount; got != 3 {
+		t.Errorf("expected 3 bound pods, got %d", got)
+	}
+	// 3 on our nodes plus the 2 unscheduled, never the 5 elsewhere
+	if got := st.TotalPods; got != 5 {
+		t.Errorf("expected 5 pods, got %d", got)
+	}
+	if got := st.PodsByPhase[v1.PodRunning]; got != 3 {
+		t.Errorf("expected 3 running, got %d", got)
+	}
+	if got := st.PodsByPhase[v1.PodPending]; got != 2 {
+		t.Errorf("expected 2 pending, got %d", got)
+	}
+
+	// hiding a node drops its pods from the counts too
+	node, ok := cluster.GetNodeByName("node-a")
+	if !ok {
+		t.Fatal("expected to find node-a")
+	}
+	node.Hide()
+
+	st = cluster.Stats()
+	if got := st.NumNodes; got != 1 {
+		t.Errorf("expected 1 visible node, got %d", got)
+	}
+	if got := st.BoundPodCount; got != 1 {
+		t.Errorf("expected 1 bound pod, got %d", got)
+	}
+	if got := st.TotalPods; got != 3 {
+		t.Errorf("expected 3 pods, got %d", got)
+	}
 }
