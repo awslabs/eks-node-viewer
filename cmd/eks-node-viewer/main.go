@@ -66,6 +66,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("creating node claim client, %s", err)
 	}
+	resourceClaimClient, err := client.NewResourceClaims(flags.Kubeconfig, flags.Context)
+	if err != nil {
+		log.Printf("creating resource claim client (DRA not available): %s", err)
+		resourceClaimClient = nil
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 
 	pprov := aws.NewStaticPricingProvider()
@@ -92,7 +97,7 @@ func main() {
 		}
 		pprov = aws.NewPricingProvider(ctx, cfg)
 	}
-	controller := client.NewController(cs, nodeClaimClient, m, nodeSelector, pprov)
+	controller := client.NewController(cs, nodeClaimClient, resourceClaimClient, m, nodeSelector, pprov)
 
 	controller.Start(ctx)
 
