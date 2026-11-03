@@ -28,20 +28,22 @@ import (
 	karpv1 "sigs.k8s.io/karpenter/pkg/apis/v1"
 )
 
-func NewKubernetes(kubeconfig, context string) (*kubernetes.Clientset, error) {
-	config, err := getConfig(kubeconfig, context)
+// NewKubernetes returns the name of the kubeconfig context in use along with a
+// clientset for it.
+func NewKubernetes(kubeconfig, context string) (string, *kubernetes.Clientset, error) {
+	contextName, config, err := getConfig(kubeconfig, context)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
-	return clientset, err
+	return contextName, clientset, nil
 }
 
 func NewNodeClaims(kubeconfig, context string) (*rest.RESTClient, error) {
-	c, err := getConfig(kubeconfig, context)
+	_, c, err := getConfig(kubeconfig, context)
 	if err != nil {
 		return nil, err
 	}
@@ -60,9 +62,25 @@ func NewNodeClaims(kubeconfig, context string) (*rest.RESTClient, error) {
 	return rest.RESTClientFor(&config)
 }
 
-func getConfig(kubeconfig, context string) (*rest.Config, error) {
-	// use the current context in kubeconfig
-	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+// getConfig returns the name of the kubeconfig context in use along with its
+// rest config. If context is empty, the kubeconfig's current context is used.
+func getConfig(kubeconfig, context string) (string, *rest.Config, error) {
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{Precedence: strings.Split(kubeconfig, ":")},
-		&clientcmd.ConfigOverrides{CurrentContext: context}).ClientConfig()
+		&clientcmd.ConfigOverrides{CurrentContext: context})
+
+	rawConfig, err := clientConfig.RawConfig()
+	if err != nil {
+		return "", nil, err
+	}
+	contextName := rawConfig.CurrentContext
+	if context != "" {
+		contextName = context
+	}
+
+	config, err := clientConfig.ClientConfig()
+	if err != nil {
+		return "", nil, err
+	}
+	return contextName, config, nil
 }
