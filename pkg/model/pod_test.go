@@ -74,6 +74,46 @@ func testPod(namespace, name string) *v1.Pod {
 	}
 	return p
 }
+
+func testPodWithPodLevelResources(namespace, name string) *v1.Pod {
+	restartAlways := v1.ContainerRestartPolicyAlways
+	p := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+		Status: v1.PodStatus{
+			Phase: v1.PodPending,
+		},
+		Spec: v1.PodSpec{
+			Resources: &v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("10"),
+					v1.ResourceMemory: resource.MustParse("12Gi"),
+				},
+			},
+			InitContainers: []v1.Container{
+				{
+					Image: "normalinit",
+					Name:  "container",
+				},
+				{
+					Image:         "sidecar",
+					Name:          "container",
+					RestartPolicy: &restartAlways,
+				},
+			},
+			Containers: []v1.Container{
+				{
+					Image: "test-image",
+					Name:  "container",
+				},
+			},
+		},
+	}
+	return p
+}
+
 func TestNewPod(t *testing.T) {
 	pod := testPod("default", "mypod")
 	pod.Spec.NodeName = "mynode"
@@ -98,6 +138,15 @@ func TestNewPod(t *testing.T) {
 		t.Errorf("expected CPU = %s, got %s", exp.String(), got.String())
 	}
 	if exp, got := resource.MustParse("2Gi"), p.Requested()[v1.ResourceMemory]; exp.Cmp(got) != 0 {
+		t.Errorf("expected Memory = %s, got %s", exp.String(), got.String())
+	}
+
+	podWithPodLevelResources := testPodWithPodLevelResources("default", "mypod")
+	pWithPodLevelResources := model.NewPod(podWithPodLevelResources)
+	if exp, got := resource.MustParse("10"), pWithPodLevelResources.Requested()[v1.ResourceCPU]; exp.Cmp(got) != 0 {
+		t.Errorf("expected CPU = %s, got %s", exp.String(), got.String())
+	}
+	if exp, got := resource.MustParse("12Gi"), pWithPodLevelResources.Requested()[v1.ResourceMemory]; exp.Cmp(got) != 0 {
 		t.Errorf("expected Memory = %s, got %s", exp.String(), got.String())
 	}
 }
