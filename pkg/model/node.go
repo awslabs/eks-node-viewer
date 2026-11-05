@@ -40,6 +40,7 @@ type Node struct {
 	visible               bool
 	node                  v1.Node
 	pods                  map[objectKey]*Pod
+	requested             map[objectKey]v1.ResourceList
 	used                  v1.ResourceList
 	Price                 float64
 	nodeclaimCreationTime time.Time
@@ -47,9 +48,10 @@ type Node struct {
 
 func NewNode(n *v1.Node) *Node {
 	node := &Node{
-		node: *n,
-		pods: map[objectKey]*Pod{},
-		used: v1.ResourceList{},
+		node:      *n,
+		pods:      map[objectKey]*Pod{},
+		requested: map[objectKey]v1.ResourceList{},
+		used:      v1.ResourceList{},
 	}
 
 	return node
@@ -140,29 +142,40 @@ func (n *Node) BindPod(pod *Pod) {
 		namespace: pod.Namespace(),
 		name:      pod.Name(),
 	}
-	_, alreadyBound := n.pods[key]
+	// the pod may have been updated in place (e.g. resized), so remove the
+	// requests that were counted when it was bound before adding the current ones
+	n.subtractRequests(key)
 	n.pods[key] = pod
-
-	if !alreadyBound {
-		for rn, q := range pod.Requested() {
-			existing := n.used[rn]
-			existing.Add(q)
-			n.used[rn] = existing
-		}
+	requested := pod.Requested()
+	n.requested[key] = requested
+	for rn, q := range requested {
+		existing := n.used[rn]
+		existing.Add(q)
+		n.used[rn] = existing
 	}
+}
+
+// subtractRequests removes the requests counted for a bound pod from the node usage.
+// The caller must hold the lock.
+func (n *Node) subtractRequests(key objectKey) {
+	requested, ok := n.requested[key]
+	if !ok {
+		return
+	}
+	for rn, q := range requested {
+		existing := n.used[rn]
+		existing.Sub(q)
+		n.used[rn] = existing
+	}
+	delete(n.requested, key)
 }
 
 func (n *Node) DeletePod(namespace string, name string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	key := objectKey{namespace: namespace, name: name}
-	if p, ok := n.pods[key]; ok {
-		// subtract the pod requests
-		for rn, q := range p.Requested() {
-			existing := n.used[rn]
-			existing.Sub(q)
-			n.used[rn] = existing
-		}
+	if _, ok := n.pods[key]; ok {
+		n.subtractRequests(key)
 		delete(n.pods, key)
 	}
 }
