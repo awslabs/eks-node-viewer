@@ -18,6 +18,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/awslabs/eks-node-viewer/pkg/model"
 )
@@ -208,4 +209,47 @@ func TestClusterDeleteNodeDeletesPods(t *testing.T) {
 		t.Errorf("expected 0 CPU used, got %s", got.String())
 	}
 
+}
+
+func TestClusterUpdatePodRequests(t *testing.T) {
+	cluster := model.NewCluster()
+
+	n := testNode("mynode")
+	n.Spec.ProviderID = "mynode-id"
+	node := model.NewNode(n)
+	node.Show()
+	cluster.AddNode(node)
+
+	podWithCPU := func(cpu string) *v1.Pod {
+		return &v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "mypod"},
+			Spec: v1.PodSpec{
+				NodeName: n.Name,
+				Containers: []v1.Container{{
+					Name: "app",
+					Resources: v1.ResourceRequirements{
+						Requests: v1.ResourceList{v1.ResourceCPU: resource.MustParse(cpu)},
+					},
+				}},
+			},
+		}
+	}
+
+	pod := model.NewPod(podWithCPU("1"))
+	cluster.AddPod(pod)
+	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("1")) != 0 {
+		t.Errorf("expected 1 CPU used, got %s", got.String())
+	}
+
+	// the pod is resized in place, mirroring how the pod informer handles updates
+	pod.Update(podWithCPU("3"))
+	cluster.AddPod(pod)
+	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("3")) != 0 {
+		t.Errorf("expected 3 CPU used after the update, got %s", got.String())
+	}
+
+	cluster.DeletePod("default", "mypod")
+	if got := cluster.Stats().UsedResources["cpu"]; got.Cmp(resource.MustParse("0")) != 0 {
+		t.Errorf("expected 0 CPU used after deleting the pod, got %s", got.String())
+	}
 }
