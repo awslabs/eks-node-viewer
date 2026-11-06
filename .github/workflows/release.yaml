@@ -8,20 +8,22 @@ on:
       - '*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - name: Checkout
-      uses: actions/checkout@v4.1.5
+      uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
       with:
         fetch-depth: 0 # disable shallow clone - get all
 
     - name: Set up Go 1.x
-      uses: actions/setup-go@v5.0.1
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
       with:
         go-version: stable
       id: go
@@ -45,7 +47,7 @@ jobs:
         git diff-index --quiet HEAD
 
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v4
+      uses: goreleaser/goreleaser-action@5fdedb94abba051217030cc86d4523cf3f02243d # v4.6.0
       with:
         distribution: goreleaser
         version: latest
