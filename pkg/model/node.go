@@ -115,6 +115,12 @@ func (n *Node) Name() string {
 	return n.node.Name
 }
 
+func (n *Node) KubeletVersion() string {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	return n.node.Status.NodeInfo.KubeletVersion
+}
+
 func (n *Node) ProviderID() string {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
