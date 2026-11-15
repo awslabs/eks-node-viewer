@@ -24,7 +24,7 @@ import (
 )
 
 func TestClusterAddNode(t *testing.T) {
-	cluster := model.NewCluster()
+	cluster := model.NewCluster("mycontext-name")
 
 	if got := len(cluster.Stats().Nodes); got != 0 {
 		t.Errorf("expected 0 nodes, got %d", got)
@@ -64,7 +64,7 @@ func TestClusterAddNode(t *testing.T) {
 }
 
 func TestClusterGetNodeByProviderID(t *testing.T) {
-	cluster := model.NewCluster()
+	cluster := model.NewCluster("mycontext-name")
 
 	_, ok := cluster.GetNode("mynode-id")
 	if ok {
@@ -89,7 +89,7 @@ func TestClusterGetNodeByProviderID(t *testing.T) {
 }
 
 func TestClusterGetNodeByName(t *testing.T) {
-	cluster := model.NewCluster()
+	cluster := model.NewCluster("mycontext-name")
 
 	_, ok := cluster.GetNodeByName("mynode")
 	if ok {
@@ -106,7 +106,7 @@ func TestClusterGetNodeByName(t *testing.T) {
 }
 
 func TestClusterUpdateNode(t *testing.T) {
-	cluster := model.NewCluster()
+	cluster := model.NewCluster("mycontext-name")
 
 	n1 := testNode("mynode")
 	n1.Status.Allocatable = v1.ResourceList{
@@ -136,7 +136,7 @@ func TestClusterUpdateNode(t *testing.T) {
 }
 
 func TestClusterAddPod(t *testing.T) {
-	cluster := model.NewCluster()
+	cluster := model.NewCluster("mycontext-name")
 
 	n := testNode("mynode")
 	n.Spec.ProviderID = "mynode-id"
@@ -176,7 +176,7 @@ func TestClusterAddPod(t *testing.T) {
 }
 
 func TestClusterDeleteNodeDeletesPods(t *testing.T) {
-	cluster := model.NewCluster()
+	cluster := model.NewCluster("mycontext-name")
 
 	// add a node and pod bound to that node
 	n := testNode("mynode")

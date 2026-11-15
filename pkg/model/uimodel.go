@@ -54,7 +54,7 @@ type UIModel struct {
 	DisablePricing bool
 }
 
-func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
+func NewUIModel(extraLabels []string, nodeSort string, style *Style, context string) *UIModel {
 	pager := paginator.New()
 	pager.Type = paginator.Dots
 	pager.ActiveDot = activeDot
@@ -62,7 +62,7 @@ func NewUIModel(extraLabels []string, nodeSort string, style *Style) *UIModel {
 	return &UIModel{
 		// red to green
 		progress:    progress.New(style.gradient),
-		cluster:     NewCluster(),
+		cluster:     NewCluster(context),
 		extraLabels: extraLabels,
 		paginator:   pager,
 		nodeSorter:  makeNodeSorter(nodeSort),
@@ -100,7 +100,7 @@ func (u *UIModel) View() string {
 		fmt.Fprintln(&b)
 		fmt.Fprintln(&b, "Waiting for update or no nodes found...")
 		fmt.Fprintln(&b, u.paginator.View())
-		fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+		fmt.Fprintln(&b, u.helpLine())
 		return b.String()
 	}
 
@@ -121,8 +121,18 @@ func (u *UIModel) View() string {
 	ctw.Flush()
 
 	fmt.Fprintln(&b, u.paginator.View())
-	fmt.Fprintln(&b, helpStyle("←/→ page • q: quit"))
+	fmt.Fprintln(&b, u.helpLine())
 	return b.String()
+}
+
+// helpLine renders the key bindings followed by the name of the cluster
+// (kubeconfig context) being viewed, so it doesn't use an extra screen line.
+func (u *UIModel) helpLine() string {
+	help := helpStyle("←/→ page • q: quit")
+	if u.cluster.name == "" {
+		return help
+	}
+	return help + helpStyle(" • cluster: ") + u.cluster.name
 }
 
 func (u *UIModel) writeNodeInfo(n *Node, w io.Writer, resources []v1.ResourceName) {

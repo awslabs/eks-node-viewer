@@ -58,7 +58,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	cs, err := client.NewKubernetes(flags.Kubeconfig, flags.Context)
+	contextName, cs, err := client.NewKubernetes(flags.Kubeconfig, flags.Context)
 	if err != nil {
 		log.Fatalf("creating client, %s", err)
 	}
@@ -73,7 +73,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("creating style, %s", err)
 	}
-	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style)
+	m := model.NewUIModel(strings.Split(flags.ExtraLabels, ","), flags.NodeSort, style, contextName)
 	m.DisablePricing = flags.DisablePricing
 	m.SetResources(strings.FieldsFunc(flags.Resources, func(r rune) bool { return r == ',' }))
 
