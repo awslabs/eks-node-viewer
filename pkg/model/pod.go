@@ -105,6 +105,7 @@ func (p *Pod) FargateCapacityProvisioned() (float64, float64, bool) {
 	match := fargateCapacityRe.FindStringSubmatch(provisioned)
 	if len(match) != 3 {
 		log.Printf("unable to parse %q for fargate provisioner capacity", provisioned)
+		return 0, 0, false
 	}
 	cpu, err := strconv.ParseFloat(match[1], 64)
 	if err != nil {
