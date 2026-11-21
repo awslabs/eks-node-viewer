@@ -181,3 +181,14 @@ func TestFargateCapacity(t *testing.T) {
 		t.Errorf("expected to have a mem capacity of 0.5, got %f", mem)
 	}
 }
+
+func TestFargateCapacityUnparsable(t *testing.T) {
+	tp := testPod("default", "mypod")
+	tp.Annotations = map[string]string{
+		"CapacityProvisioned": "unknown",
+	}
+	p := model.NewPod(tp)
+	if _, _, ok := p.FargateCapacityProvisioned(); ok {
+		t.Errorf("expected no fargate capacity for an unparsable annotation")
+	}
+}
